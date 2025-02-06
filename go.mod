@@ -1,9 +1,8 @@
-module gsheet
+module github.com/sigma-firma/gsheet
 
 go 1.23.4
 
 require (
-	github.com/sigma-firma/inboxer v0.0.0-20250206130226-1538bf37c182
 	golang.org/x/oauth2 v0.26.0
 	google.golang.org/api v0.220.0
 )
