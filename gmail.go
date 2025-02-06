@@ -32,21 +32,24 @@ import (
 	"google.golang.org/api/option"
 )
 
+// Gmailer is a wrapper around the *gmail.Service type, giving us access to
+// the Google Gmail API service.
 type Gmailer struct {
-	Me      string // Authed user
 	Service *gmail.Service
+	Msgs    []*Msg
 }
 
+// *Access.Gmail() gives usaccess to the Google Gmail API via *Gmailer.Service
 func (a *Access) Gmail() *Gmailer {
 	service, err := gmail.NewService(context.Background(), option.WithHTTPClient(a.GetClient()))
 	if err != nil {
 		log.Println(err)
 	}
 	a.GmailAPI = service
-	return &Gmailer{"", a.GmailAPI}
+	return &Gmailer{Service: a.GmailAPI}
 }
 
-// msg is an email message, self explanatory
+// Msg is an email message, self explanatory
 type Msg struct {
 	From      string
 	To        string
@@ -59,6 +62,7 @@ type Msg struct {
 	Formed    *gmail.Message
 }
 
+// *Msg.Form() forms the message into a proper *gmail.Message type.
 func (m *Msg) Form() {
 	var gm *gmail.Message = &gmail.Message{}
 	var m_b []byte = []byte(
@@ -71,10 +75,10 @@ func (m *Msg) Form() {
 	m.Formed = gm
 }
 
-// SendMail allows us to send mail
-func (m *Msg) Send(srv *gmail.Service) error {
+// *Msg.Send() allows us to send mail
+func (m *Msg) Send(gs *gmail.Service) error {
 	m.Form()
-	sendCall := srv.Users.Messages.Send(m.From, m.Formed)
+	sendCall := gs.Users.Messages.Send(m.From, m.Formed)
 	_, err := sendCall.Do()
 	if err != nil {
 		return err
@@ -83,21 +87,21 @@ func (m *Msg) Send(srv *gmail.Service) error {
 	return nil
 }
 
-// MarkAs allows you to mark an email with a specific label using the
+// *Gmailer.MarkAs() allows you to mark an email with a specific label using the
 // gmail.ModifyMessageRequest struct.
-func MarkAs(srv *gmail.Service, msg *gmail.Message, req *gmail.ModifyMessageRequest) (*gmail.Message, error) {
-	return srv.Users.Messages.Modify("me", msg.Id, req).Do()
+func (g *Gmailer) MarkAs(msg *gmail.Message, req *gmail.ModifyMessageRequest) (*gmail.Message, error) {
+	return g.Service.Users.Messages.Modify("me", msg.Id, req).Do()
 }
 
-// MarkAllAsRead removes the UNREAD label from all emails.
-func MarkAllAsRead(srv *gmail.Service) error {
+// *Gmailer.MarkAllAsRead() removes the UNREAD label from all emails.
+func (g *Gmailer) MarkAllAsRead() error {
 	// Request to remove the label ID "UNREAD"
 	req := &gmail.ModifyMessageRequest{
 		RemoveLabelIds: []string{"UNREAD"},
 	}
 
 	// Get the messages labeled "UNREAD"
-	msgs, err := Query(srv, "label:UNREAD")
+	msgs, err := g.Query("label:UNREAD")
 	if err != nil {
 		return err
 	}
@@ -105,7 +109,7 @@ func MarkAllAsRead(srv *gmail.Service) error {
 	// For each UNREAD message, request to remove the "UNREAD" label (thus
 	// maring it as "READ").
 	for _, v := range msgs {
-		_, err := MarkAs(srv, v, req)
+		_, err := g.MarkAs(v, req)
 		if err != nil {
 			return err
 		}
@@ -114,17 +118,17 @@ func MarkAllAsRead(srv *gmail.Service) error {
 	return nil
 }
 
-// GetBody gets, decodes, and returns the body of the email. It returns an
-// error if decoding goes wrong. mimeType is used to indicate whether you want
-// the plain text or html encoding ("text/html", "text/plain").
-func GetBody(msg *gmail.Message, mimeType string) (string, error) {
+// *Gmailer.GetBody() gets, decodes, and returns the body of the email. It
+// returns an error if decoding goes wrong. mimeType is used to indicate
+// whether you want the plain text or html encoding ("text/html", "text/plain").
+func (g *Gmailer) GetBody(msg *gmail.Message, mimeType string) (string, error) {
 	// Loop through the message payload parts to find the parts with the
 	// mimetypes we want.
 	for _, v := range msg.Payload.Parts {
 		if v.MimeType == "multipart/alternative" {
 			for _, l := range v.Parts {
 				if l.MimeType == mimeType && l.Body.Size >= 1 {
-					dec, err := decodeEmailBody(l.Body.Data)
+					dec, err := g.DecodeEmailBody(l.Body.Data)
 					if err != nil {
 						return "", err
 					}
@@ -133,7 +137,7 @@ func GetBody(msg *gmail.Message, mimeType string) (string, error) {
 			}
 		}
 		if v.MimeType == mimeType && v.Body.Size >= 1 {
-			dec, err := decodeEmailBody(v.Body.Data)
+			dec, err := g.DecodeEmailBody(v.Body.Data)
 			if err != nil {
 				return "", err
 			}
@@ -168,8 +172,8 @@ type PartialMetadata struct {
 	DeliveredTo []string
 }
 
-// GetPartialMetadata gets some of the useful metadata from the headers.
-func GetPartialMetadata(msg *gmail.Message) *PartialMetadata {
+// *Gmailer.GetPartialMetadata() gets some of the useful metadata from the headers.
+func (g *Gmailer) GetPartialMetadata(msg *gmail.Message) *PartialMetadata {
 	info := &PartialMetadata{}
 	for _, v := range msg.Payload.Headers {
 		switch strings.ToLower(v.Name) {
@@ -194,9 +198,9 @@ func GetPartialMetadata(msg *gmail.Message) *PartialMetadata {
 	return info
 }
 
-// decodeEmailBody is used to decode the email body by converting from
-// URLEncoded base64 to a string.
-func decodeEmailBody(data string) (string, error) {
+// *Gmailer.DecodeEmailBody() is used to decode the email body by converting
+// from URLEncoded base64 to a string.
+func (g *Gmailer) DecodeEmailBody(data string) (string, error) {
 	decoded, err := base64.URLEncoding.DecodeString(data)
 	if err != nil {
 		return "", err
@@ -204,9 +208,9 @@ func decodeEmailBody(data string) (string, error) {
 	return string(decoded), nil
 }
 
-// ReceivedTime parses and converts a Unix time stamp into a human readable
-// format ().
-func ReceivedTime(datetime int64) (time.Time, error) {
+// *Gmailer.ReceivedTime() parses and converts a Unix time stamp into a human
+// readable format ().
+func (g *Gmailer) ReceivedTime(datetime int64) (time.Time, error) {
 	conv := strconv.FormatInt(datetime, 10)
 	// Remove trailing zeros.
 	conv = conv[:len(conv)-3]
@@ -217,30 +221,31 @@ func ReceivedTime(datetime int64) (time.Time, error) {
 	return time.Unix(tc, 0), nil
 }
 
-// Query queries the inbox for a string following the search style of the gmail
-// online mailbox.
+// *Gmailer.Query() queries the inbox for a string following the search style
+// of the gmail online mailbox.
 // example:
 // "in:sent after:2017/01/01 before:2017/01/30"
-func Query(srv *gmail.Service, query string) ([]*gmail.Message, error) {
-	inbox, err := srv.Users.Messages.List("me").Q(query).Do()
+func (g *Gmailer) Query(query string) ([]*gmail.Message, error) {
+	inbox, err := g.Service.Users.Messages.List("me").Q(query).Do()
 	if err != nil {
+
 		return []*gmail.Message{}, err
 	}
-	msgs, err := getByID(srv, inbox)
+	msgs, err := g.GetByID(inbox)
 	if err != nil {
 		return msgs, err
 	}
 	return msgs, nil
 }
 
-// getByID gets emails individually by ID. This is necessary because this is
+// *Gmailer.GetByID() gets emails individually by ID. This is necessary because this is
 // how the gmail API is set [0][1] up apparently (but why?).
 // [0] https://developers.google.com/gmail/api/v1/reference/users/messages/get
 // [1] https://stackoverflow.com/questions/36365172/message-payload-is-always-null-for-all-messages-how-do-i-get-this-data
-func getByID(srv *gmail.Service, msgs *gmail.ListMessagesResponse) ([]*gmail.Message, error) {
+func (g *Gmailer) GetByID(msgs *gmail.ListMessagesResponse) ([]*gmail.Message, error) {
 	var msgSlice []*gmail.Message
 	for _, v := range msgs.Messages {
-		msg, err := srv.Users.Messages.Get("me", v.Id).Do()
+		msg, err := g.Service.Users.Messages.Get("me", v.Id).Do()
 		if err != nil {
 			return msgSlice, err
 		}
@@ -249,31 +254,32 @@ func getByID(srv *gmail.Service, msgs *gmail.ListMessagesResponse) ([]*gmail.Mes
 	return msgSlice, nil
 }
 
-// GetMessages gets and returns gmail messages
-func GetMessages(srv *gmail.Service, howMany uint) ([]*gmail.Message, error) {
+// *Gmailer.GetMessages() gets and returns gmail messages
+func (g *Gmailer) GetMessages(howMany uint) ([]*gmail.Message, error) {
 	var msgSlice []*gmail.Message
 
 	// Get the messages
-	inbox, err := srv.Users.Messages.List("me").MaxResults(int64(howMany)).Do()
+	inbox, err := g.Service.Users.Messages.List("me").MaxResults(int64(howMany)).Do()
 	if err != nil {
 		return msgSlice, err
 	}
 
-	msgs, err := getByID(srv, inbox)
+	msgs, err := g.GetByID(inbox)
 	if err != nil {
 		return msgs, err
 	}
 	return msgs, nil
 }
 
-// CheckForUnreadByLabel checks for unread mail matching the specified label.
-// NOTE: When checking your inbox for unread messages, it's not uncommon for
-// it to return thousands of unread messages that you don't know about. To see
-// them in gmail, query your mail for "label:unread". For CheckForUnreadByLabel
-// to work properly you need to mark all mail as read either through gmail or
-// through the MarkAllAsRead() function found in this library.
-func CheckForUnreadByLabel(srv *gmail.Service, label string) (int64, error) {
-	inbox, err := srv.Users.Labels.Get("me", label).Do()
+// *Gmailer.CheckForUnreadByLabel() checks for unread mail matching the
+// specified label. NOTE: When checking your inbox for unread messages, it's
+// not uncommon for it to return thousands of unread messages that you don't
+// know about. To see them in gmail, query your mail for "label:unread". For
+// CheckForUnreadByLabel to work properly you need to mark all mail as read
+// either through gmail or through the MarkAllAsRead() function found in this
+// library.
+func (g *Gmailer) CheckForUnreadByLabel(label string) (int64, error) {
+	inbox, err := g.Service.Users.Labels.Get("me", label).Do()
 	if err != nil {
 		return -1, err
 	}
@@ -285,14 +291,14 @@ func CheckForUnreadByLabel(srv *gmail.Service, label string) (int64, error) {
 	return inbox.MessagesUnread + inbox.ThreadsUnread, nil
 }
 
-// CheckForUnread checks for mail labeled "UNREAD".
+// *Gmailer.CheckForUnread() checks for mail labeled "UNREAD".
 // NOTE: When checking your inbox for unread messages, it's not uncommon for
 // it to return thousands of unread messages that you don't know about. To see
 // them in gmail, query your mail for "label:unread". For CheckForUnread to
 // work properly you need to mark all mail as read either through gmail or
 // through the MarkAllAsRead() function found in this library.
-func CheckForUnread(srv *gmail.Service) (int64, error) {
-	inbox, err := srv.Users.Labels.Get("me", "UNREAD").Do()
+func (g *Gmailer) CheckForUnread() (int64, error) {
+	inbox, err := g.Service.Users.Labels.Get("me", "UNREAD").Do()
 	if err != nil {
 		return -1, err
 	}
@@ -304,7 +310,7 @@ func CheckForUnread(srv *gmail.Service) (int64, error) {
 	return inbox.MessagesUnread + inbox.ThreadsUnread, nil
 }
 
-// GetLabels gets a list of the labels used in the users inbox.
-func GetLabels(srv *gmail.Service) (*gmail.ListLabelsResponse, error) {
-	return srv.Users.Labels.List("me").Do()
+// *Gmailer.GetLabels() gets a list of the labels used in the users inbox.
+func (g *Gmailer) GetLabels() (*gmail.ListLabelsResponse, error) {
+	return g.Service.Users.Labels.List("me").Do()
 }

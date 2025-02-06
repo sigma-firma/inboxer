@@ -27,24 +27,47 @@ import (
 	"google.golang.org/api/sheets/v4"
 )
 
-func (a *Access) Sheets() *sheets.Service {
-	service, err := sheets.NewService(context.Background(), option.WithHTTPClient(a.GetClient()))
+// Sheeter is a wrapper around the *sheets.Service type, giving us access to
+// the Google Sheets API service.
+type Sheeter struct {
+	Service *sheets.Service
+}
+
+// Spread is passed as the argument to the sheets related functions found
+// herein.
+type Spread struct {
+	ID         string
+	WriteRange string
+	Vals       []interface{}
+	ReadRange  string
+}
+
+// *Access.Sheets() gives usaccess to the Google Sheets API via *Sheeter.Service
+func (a *Access) Sheets() *Sheeter {
+	service, err := sheets.NewService(
+		context.Background(),
+		option.WithHTTPClient(a.GetClient()),
+	)
 	if err != nil {
 		log.Println(err)
 	}
 	a.SheetsAPI = service
-	return a.SheetsAPI
+	return &Sheeter{a.SheetsAPI}
 }
 
-// Write is used to write to a spreadsheet
-func (a *Access) Write(srv *sheets.Service, spreadsheetId string, writeRange string, vals []interface{}) (*sheets.AppendValuesResponse, error) {
+// *Sheeter.Write() is used to write to a spreadsheet
+func (s *Sheeter) Write(sht *Spread) (*sheets.AppendValuesResponse, error) {
 	var vr sheets.ValueRange
-	vr.Values = append(vr.Values, vals)
+	vr.Values = append(vr.Values, sht.Vals)
 
-	return srv.Spreadsheets.Values.Append(spreadsheetId, writeRange, &vr).ValueInputOption("RAW").Do()
+	return s.Service.Spreadsheets.Values.Append(
+		sht.ID,
+		sht.WriteRange,
+		&vr,
+	).ValueInputOption("RAW").Do()
 }
 
-// Read is used to read from a spreadsheet
-func (a *Access) Read(srv *sheets.Service, spreadsheetId string, readRange string) (*sheets.ValueRange, error) {
-	return srv.Spreadsheets.Values.Get(spreadsheetId, readRange).Do()
+// *Sheeter.Read() is used to read from a spreadsheet
+func (s *Sheeter) Read(sht *Spread) (*sheets.ValueRange, error) {
+	return s.Service.Spreadsheets.Values.Get(sht.ID, sht.ReadRange).Do()
 }
