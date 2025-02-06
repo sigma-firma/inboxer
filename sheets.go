@@ -36,10 +36,11 @@ type Sheeter struct {
 // Spread is passed as the argument to the sheets related functions found
 // herein.
 type Spread struct {
-	ID         string
-	WriteRange string
-	Vals       []interface{}
-	ReadRange  string
+	ID               string
+	WriteRange       string
+	Vals             []interface{}
+	ReadRange        string
+	ValueInputOption string
 }
 
 // *Access.Sheets() gives usaccess to the Google Sheets API via *Sheeter.Service
@@ -64,7 +65,7 @@ func (s *Sheeter) Write(sht *Spread) (*sheets.AppendValuesResponse, error) {
 		sht.ID,
 		sht.WriteRange,
 		&vr,
-	).ValueInputOption("RAW").Do()
+	).ValueInputOption(sht.ValueInputOption).Do()
 }
 
 // *Sheeter.Read() is used to read from a spreadsheet
