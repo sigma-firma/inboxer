@@ -32,13 +32,18 @@ import (
 	"google.golang.org/api/option"
 )
 
-func (a *Access) Gmail() *gmail.Service {
+type Gmailer struct {
+	Me      string // Authed user
+	Service *gmail.Service
+}
+
+func (a *Access) Gmail() *Gmailer {
 	service, err := gmail.NewService(context.Background(), option.WithHTTPClient(a.GetClient()))
 	if err != nil {
 		log.Println(err)
 	}
 	a.GmailAPI = service
-	return a.GmailAPI
+	return &Gmailer{"", a.GmailAPI}
 }
 
 // msg is an email message, self explanatory
