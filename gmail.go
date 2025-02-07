@@ -20,7 +20,6 @@
 package gsheet
 
 import (
-	"context"
 	"encoding/base64"
 	"errors"
 	"log"
@@ -38,7 +37,10 @@ import (
 
 // *Access.Gmail() gives usaccess to the Google Gmail API via *Gmailer.Service
 func (a *Access) Gmail() *Gmailer {
-	service, err := gmail.NewService(context.Background(), option.WithHTTPClient(a.GetClient()))
+	service, err := gmail.NewService(
+		a.Context,
+		option.WithHTTPClient(a.Config.Client(a.Context, a.Token)),
+	)
 	if err != nil {
 		log.Println(err)
 	}

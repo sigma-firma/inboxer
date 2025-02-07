@@ -20,7 +20,6 @@
 package gsheet
 
 import (
-	"context"
 	"log"
 
 	"google.golang.org/api/option"
@@ -34,8 +33,8 @@ import (
 // *Access.Sheets() gives access to the Google Sheets API via *Sheeter.Service
 func (a *Access) Sheets() *Sheeter {
 	service, err := sheets.NewService(
-		context.Background(),
-		option.WithHTTPClient(a.GetClient()),
+		a.Context,
+		option.WithHTTPClient(a.Config.Client(a.Context, a.Token)),
 	)
 	if err != nil {
 		log.Println(err)
