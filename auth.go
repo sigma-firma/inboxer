@@ -20,7 +20,6 @@
 package gsheet
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -69,18 +68,17 @@ func (a *Access) GetClient() *http.Client {
 
 // Retrieves a token from a local file.
 func (a *Access) TokenFromFile() error {
-	b, err := os.ReadFile(a.TokenPath)
+	f, err := os.Open(a.TokenPath)
 	if err != nil {
-		log.Println(err)
 		return err
 	}
-	var at *oauth2.Token = &oauth2.Token{}
-
-	err = json.Unmarshal(b, at)
+	defer f.Close()
+	tok := &oauth2.Token{}
+	err = json.NewDecoder(f).Decode(tok)
 	if err != nil {
-		log.Println(err)
 		return err
 	}
+	a.Token = tok
 	return nil
 }
 
@@ -95,7 +93,7 @@ func (a *Access) TokenFromWeb() {
 		log.Fatalf("Unable to read authorization code: %v", err)
 	}
 
-	tok, err := a.Config.Exchange(context.TODO(), authCode)
+	tok, err := a.Config.Exchange(a.Context, authCode)
 	if err != nil {
 		log.Fatalf("Unable to retrieve token from web: %v", err)
 	}
