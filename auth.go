@@ -66,7 +66,8 @@ func (a *Access) GetClient() *http.Client {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return a.Config.Client(a.Context, a.Token)
+	a.Client = a.Config.Client(a.Context, a.Token)
+	return a.Client
 }
 
 // Retrieves a token from a local file.

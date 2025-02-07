@@ -22,6 +22,7 @@ package gsheet
 import (
 	"log"
 
+	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 )
 
@@ -33,7 +34,7 @@ import (
 func (a *Access) Sheets() *Sheeter {
 	service, err := sheets.NewService(
 		a.Context,
-		// option.WithHTTPClient(a.Config.Client(a.Context, a.Token)),
+		option.WithHTTPClient(a.Client),
 	)
 	if err != nil {
 		log.Println(err)

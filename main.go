@@ -28,6 +28,7 @@ package gsheet
 // (Everything else in this module is written by the author).
 import (
 	"context"
+	"net/http"
 	"time"
 
 	"golang.org/x/oauth2"
@@ -72,6 +73,7 @@ type Access struct {
 	// token. If you want it to last more than 24 hours you want to set this
 	// to true. *Access.Cycle will be run in a go routine.
 	DoCycle bool
+	Client  *http.Client
 }
 
 // NewAccess() instantiates a new *Access struct, initializing it with default
