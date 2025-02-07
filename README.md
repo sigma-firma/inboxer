@@ -441,7 +441,7 @@ func main() {
                 fmt.Println(msg.Snippet)
         }
 }
-`
+```
 
 ## MORE ON CREDENTIALS:
 
