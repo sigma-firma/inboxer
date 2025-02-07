@@ -18,18 +18,26 @@
 [//]: # (OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE)
 [//]: # (SOFTWARE.)
 
-## `gsheet` Features 
+# `gsheet` Features 
 
-  - Send emails
-  - Mark emails (read/unread/important/etc)
-  - Get labels used in inbox
-  - Get emails by query (eg "in:sent after:2017/01/01 before:2017/01/30")
-  - Get email metadata
-  - Get email main body ("text/plain", "text/html")
-  - Get the number of unread messages
-  - Convert email dates to human readable format
-  - Append row to spread sheet in google Sheets
-  - Read data from spread sheet
+  - Access
+    - Connect/Authenticate with sheets and/or gmail api using your credentials
+      and recieve a refresh token
+    - Auto refresh the token every 12 hours by default (can be adjusted)
+
+  - Sheets
+    - Append row to spread sheet in google Sheets
+    - Read data from spread sheet
+
+  - Gmail
+    - Send emails
+    - Mark emails (read/unread/important/etc)
+    - Get labels used in inbox
+    - Get emails by query (eg "in:sent after:2017/01/01 before:2017/01/30")
+    - Get email metadata
+    - Get email main body ("text/plain", "text/html")
+    - Get the number of unread messages
+    - Convert email dates to human readable format
 
 
 ### Validating credentials and connecting to the API:
@@ -79,7 +87,7 @@ func main() {
 
 # Example Usage
 
-# ACCESS
+## Getting *Access
 
 ### Setting up credentials/tokens and refreshing them
 
@@ -106,7 +114,8 @@ var gm *gsheet.Gmailer = access.Gmail()
 // Connect to the Sheets API
 var sh *gsheet.Sheeter = access.Gmail()
 ```
-# Sheets
+
+## Sheets
 
 ### Reading values from a spreadsheet:
 
@@ -181,7 +190,7 @@ func main() {
 
 ```
 
-# GMAIL
+## GMAIL
 
 ### Check for new unread messages
 
@@ -256,7 +265,9 @@ func main() {
 }
 
 ```
-## SENDING MAIL
+
+### Sending mail
+
 ```go
 package main
 
@@ -286,7 +297,7 @@ func main() {
 }
 ```
 
-## MARKING EMAILS
+### Marking emails
 
 ```go
 func main() {
@@ -310,17 +321,16 @@ func main() {
 }
 
 ```
-## MARK ALL "UNREAD" EMAILS AS "READ"
+### Mark all "unread" emails as "read"
 
 ```go
 func main() {
         // Connect to the gmail API service.
         gm := access.Gmail()
-
         gm.MarkAllAsRead()
 }
 ```
-## GETTING LABELS
+### Getting labels
 
 ```go
 func main() {
@@ -338,7 +348,7 @@ func main() {
 }
 
 ```
-## METADATA
+### Metadata
 
 ```go
 func main() {
@@ -366,7 +376,7 @@ func main() {
 }
 
 ```
-## GETTING THE EMAIL BODY
+### Getting the email body
 
 ```go
 func main() {
@@ -388,7 +398,7 @@ func main() {
 }
 
 ```
-## GETTING THE NUMBER OF UNREAD MESSAGES
+### Getting the number of unread messages
 
 ```go
 // NOTE: to actually view the email text use gm.Query and query for unread
@@ -407,7 +417,7 @@ func main() {
 
 
 ```
-## CONVERTING DATES
+### Converting dates
 
 ```go
 // Convert UNIX time stamps to human readable format
@@ -433,7 +443,7 @@ func main() {
 
 ```
 
-## SNIPPET
+### Snippet
 
 ```go
 // Snippets are not really part of the package but I'm including them in the doc
@@ -455,7 +465,7 @@ func main() {
 }
 ```
 
-## MORE ON CREDENTIALS:
+# More on credentials:
 
 For gsheet to work you must have a gmail account and a file containing your 
 authorization info in the directory you will specify when setting up gsheet. 
