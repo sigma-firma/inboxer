@@ -26,25 +26,9 @@ package gsheet
 // example code, and I, the author of this module, do not take credit for the
 // code found in this file, but give credit to the authors at Google.
 // (Everything else in this module is written by the author).
-//
-// EXAMPLE
-//
-// func main() {
-// 	var access *Access = NewAccess(
-// 		os.Getenv("HOME")+"/credentials/credentials.json",
-// 		os.Getenv("HOME")+"/credentials/quickstart.json",
-// 		[]string{
-// 			gmail.GmailComposeScope,
-// 			sheets.SpreadsheetsScope,
-// 		})
-// 	access.ReadCredentials()
-// 	access.Connect(&gmail.Service{})
-// 	access.GmailAPI.Users.Messages.Send("me", &gmail.Message{})
-// 	fmt.Println(access)
-// }
-
 import (
 	"context"
+	"time"
 
 	"golang.org/x/oauth2"
 	"google.golang.org/api/gmail/v1"
@@ -80,6 +64,8 @@ type Access struct {
 	// SheetsAPI is used as an alternative access point to the Sheets API
 	// service, if you don't wish to use the Sheeter struct. see: sheets.go
 	SheetsAPI *sheets.Service
+	// RefreshRate
+	RefreshRate *time.Ticker
 }
 
 // NewAccess() instantiates a new *Access struct, initializing it with default
@@ -110,5 +96,15 @@ func (a *Access) Connect(service any) {
 		a.Gmail() // see: gmail.go
 	case *sheets.Service:
 		a.Sheets() // see: sheets.go
+	}
+}
+
+func (a *Access) Cycle(rate time.Duration, callback func()) {
+	if rate != 0 {
+		a.RefreshRate = time.NewTicker(rate)
+	}
+	for {
+		<-a.RefreshRate.C
+		callback()
 	}
 }

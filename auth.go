@@ -104,7 +104,6 @@ func (a *Access) GetClient() *http.Client {
 	// time.
 	err := a.TokenFromFile()
 	if err != nil {
-		fmt.Println("test")
 		a.GetTokenFromWeb()
 	}
 	err = a.SaveToken()

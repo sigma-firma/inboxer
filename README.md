@@ -18,7 +18,19 @@
 [//]: # (OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE)
 [//]: # (SOFTWARE.)
 
-# Example Usage
+## `gsheet` Features 
+
+  - Send emails
+  - Mark emails (read/unread/important/etc)
+  - Get labels used in inbox
+  - Get emails by query (eg "in:sent after:2017/01/01 before:2017/01/30")
+  - Get email metadata
+  - Get email main body ("text/plain", "text/html")
+  - Get the number of unread messages
+  - Convert email dates to human readable format
+  - Append row to spread sheet in google Sheets
+  - Read data from spread sheet
+
 
 ### Validating credentials and connecting to the API:
 
@@ -42,33 +54,32 @@ following:
 
 ```go
 func main() {
-	var access *Access = NewAccess(
+	var access *gsheet.Access = gsheet.NewAccess(
+        //location of credentials.json 
+        // NOTE: Get this from Google
 		os.Getenv("HOME")+"/credentials/credentials.json",
-		os.Getenv("HOME")+"/credentials/quickstart.json",
+        // Location of token.json, or where/what it should be saved /as. 
+        // NOTE: This will automatically download if you don't have it
+		os.Getenv("HOME")+"/credentials/token.json",
+        // Scopes
 		[]string{
 			gmail.GmailComposeScope,
 			sheets.SpreadsheetsScope,
 		})
-	access.ReadCredentials()
-	access.Connect(&gmail.Service{})
-	access.Connect(&sheets.Service{})
-	fmt.Println(access)
+
+    // connect to gmail
+    gm := access.Gmail()
+
+    // connect to sheets
+    sh := access.Sheets()
 }
 
 ```
 
-## Features 
 
-  - Send emails
-  - Mark emails (read/unread/important/etc)
-  - Get labels used in inbox
-  - Get emails by query (eg "in:sent after:2017/01/01 before:2017/01/30")
-  - Get email metadata
-  - Get email main body ("text/plain", "text/html")
-  - Get the number of unread messages
-  - Convert email dates to human readable format
-  - Append row to spread sheet in google Sheets
-  - Read data from spread sheet
+# Example Usage
+
+# ACCESS
 
 ### Setting up credentials/tokens and refreshing them
 
@@ -95,6 +106,7 @@ var gm *gsheet.Gmailer = access.Gmail()
 // Connect to the Sheets API
 var sh *gsheet.Sheeter = access.Gmail()
 ```
+# Sheets
 
 ### Reading values from a spreadsheet:
 
