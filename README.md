@@ -181,7 +181,7 @@ func main() {
 
 ```
 
-# GMAIL:
+# GMAIL
 
 ### Check for new unread messages
 
