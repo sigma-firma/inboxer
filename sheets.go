@@ -56,8 +56,8 @@ func (a *Access) Sheets() *Sheeter {
 	return &Sheeter{a.SheetsAPI}
 }
 
-// *Sheeter.Write() is used to write to a spreadsheet
-func (s *Sheeter) Write(sht *Spread) (*sheets.AppendValuesResponse, error) {
+// *Sheeter.AppendRow() is used to write to a spreadsheet
+func (s *Sheeter) AppendRow(sht *Spread) (*sheets.AppendValuesResponse, error) {
 	var vr sheets.ValueRange
 	vr.Values = append(vr.Values, sht.Vals)
 
