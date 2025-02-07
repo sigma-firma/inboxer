@@ -62,23 +62,21 @@ func (a *Access) GetClient() *http.Client {
 	if err != nil {
 		a.TokenFromWeb()
 	}
-	err = a.SaveToken()
-	if err != nil {
-		log.Fatal(err)
-	}
+
 	a.Client = a.Config.Client(a.Context, a.Token)
 	return a.Client
 }
 
 // Retrieves a token from a local file.
 func (a *Access) TokenFromFile() error {
-	f, err := os.Open(a.TokenPath)
+	b, err := os.ReadFile(a.TokenPath)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
-	defer f.Close()
-	err = json.NewDecoder(f).Decode(a.Token)
+	var at *oauth2.Token = &oauth2.Token{}
+
+	err = json.Unmarshal(b, at)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -102,7 +100,10 @@ func (a *Access) TokenFromWeb() {
 		log.Fatalf("Unable to retrieve token from web: %v", err)
 	}
 	a.Token = tok
-	a.LastRefreshed = time.Now()
+	err = a.SaveToken()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 // Saves a token to a file path.
@@ -131,7 +132,10 @@ func (a *Access) Cycle(rate time.Duration) {
 				log.Println(err)
 			}
 			a.Token = t
-			a.LastRefreshed = time.Now()
+			err = a.SaveToken()
+			if err != nil {
+				log.Println(err)
+			}
 			a.RefreshRate.Reset(rate)
 		}
 	}()

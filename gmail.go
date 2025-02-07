@@ -39,7 +39,7 @@ import (
 func (a *Access) Gmail() *Gmailer {
 	service, err := gmail.NewService(
 		a.Context,
-		option.WithHTTPClient(a.Config.Client(a.Context, a.Token)),
+		option.WithHTTPClient(a.GetClient()),
 	)
 	if err != nil {
 		log.Println(err)
@@ -57,7 +57,6 @@ func (a *Access) Gmail() *Gmailer {
 type Gmailer struct {
 	Service *gmail.Service
 	Msgs    []*Msg
-	Msg
 }
 
 // Gmailer.Msg is an email message, self explanatory

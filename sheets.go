@@ -34,7 +34,7 @@ import (
 func (a *Access) Sheets() *Sheeter {
 	service, err := sheets.NewService(
 		a.Context,
-		option.WithHTTPClient(a.Client),
+		option.WithHTTPClient(a.GetClient()),
 	)
 	if err != nil {
 		log.Println(err)
