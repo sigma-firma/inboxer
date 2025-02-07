@@ -296,9 +296,9 @@ type PartialMetadata struct {
 }
 
 // *Gmailer.GetPartialMetadata() gets some of the useful metadata from the headers.
-func (g *Gmailer) GetPartialMetadata(msg *Msg) *PartialMetadata {
+func (g *Gmailer) GetPartialMetadata(msg *gmail.Message) *PartialMetadata {
 	info := &PartialMetadata{}
-	for _, v := range msg.Form().Payload.Headers {
+	for _, v := range msg.Payload.Headers {
 		switch strings.ToLower(v.Name) {
 		case "sender":
 			info.Sender = v.Value
