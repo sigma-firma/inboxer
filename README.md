@@ -18,7 +18,9 @@
 [//]: # (OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE)
 [//]: # (SOFTWARE.)
 
-# `gsheet` Features 
+# `gsheet`: Access and manipulate Google Sheets Spreadsheets, and Gmail emails using Googles official (Sheets API] and Gmail API)[https://developers.google.com/sheets/api/guides/conceptsGoogle]
+
+## `gsheet` features:
 
   - Access
     - Connect/Authenticate with sheets and/or gmail api using your credentials
