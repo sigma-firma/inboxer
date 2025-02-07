@@ -56,10 +56,9 @@ type Sheeter struct {
 	Writables      map[string]*SpreadSheet
 	Readables      map[string]*SpreadSheet
 	ReadWriteables map[string]*SpreadSheet
-	SpreadSheet
 }
 
-// *Sheeter.SpreadSheet is passed as the argument to the sheets related
+// SpreadSheet is passed as the argument to the sheets related
 // functions found herein.
 type SpreadSheet struct {
 	ID               string

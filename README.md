@@ -65,23 +65,24 @@ following:
 ```go
 func main() {
 	var access *gsheet.Access = gsheet.NewAccess(
-        //location of credentials.json 
-        // NOTE: Get this from Google
+		//location of credentials.json
+		// NOTE: Get this from Google
 		os.Getenv("HOME")+"/credentials/credentials.json",
-        // Location of token.json, or where/what it should be saved /as. 
-        // NOTE: This will automatically download if you don't have it
+		// Location of token.json, or where/what it should be saved /as.
+		// NOTE: This will automatically download if you don't have it
 		os.Getenv("HOME")+"/credentials/token.json",
-        // Scopes
+		// Scopes
 		[]string{
 			gmail.GmailComposeScope,
 			sheets.SpreadsheetsScope,
 		})
 
-    // connect to gmail
-    gm := access.Gmail()
+	// connect to gmail
+	access.Gmail()
 
-    // connect to sheets
-    sh := access.Sheets()
+	// connect to sheets
+	access.Sheets()
+
 }
 
 ```
