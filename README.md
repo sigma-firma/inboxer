@@ -40,7 +40,7 @@
     - Convert email dates to human readable format
 
 
-### Validating credentials and connecting to the API:
+# Validating credentials and connecting to the API:
 
 It's important to note that for this module to work properly, you need to 
 **enable the sheets and Gmail API(s) in Google Cloud Services**, and download the 
