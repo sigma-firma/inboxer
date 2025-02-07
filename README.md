@@ -123,41 +123,50 @@ var sh *gsheet.Sheeter = access.Gmail()
 ### Reading values from a spreadsheet:
 
 ```go
-func main() {                                                                          
-        package main
+package main
 
-        import (
-                "fmt"
-                "log"
+import (
+	"fmt"
+	"log"
+	"os"
 
-                "github.com/sigma-firma/gsheet"
-        )
+	"github.com/sigma-firma/gsheet"
+	"google.golang.org/api/gmail/v1"
+	"google.golang.org/api/sheets/v4"
+)
 
-        // Connect to the API                                                          
-        sh := access.Sheets()
+func main() {
+	// Instantiate a new *Access struct with essential values
+	var access *gsheet.Access = gsheet.NewAccess(
+		os.Getenv("HOME")+"/credentials/credentials.json",
+		os.Getenv("HOME")+"/credentials/token.json",
+		[]string{gmail.GmailComposeScope, sheets.SpreadsheetsScope},
+	)
+	// Connect to the API
+	sh := access.Sheets()
 
+	// Prints the names and majors of students in a sample spreadsheet:
+	// https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
+	sh.Readables = make(map[string]*gsheet.SpreadSheet)
+	sh.Readables["testsheet"] = &gsheet.SpreadSheet{
+		ID:        "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
+		ReadRange: "Class Data!A2:E",
+	}
 
-        // Prints the names and majors of students in a sample spreadsheet:
-        // https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
-       	var req *gsheet.Spread = &gsheet.Spread{
-                ID:               "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
-                ReadRange:        "Class Data!A2:E",
-       }
- 
-        resp, err := sh.Read(req)
-        if err != nil {
-                fmt.Fatalf("Unable to retrieve data from sheet: %v", err)
-        }
+	resp, err := sh.Read(sh.Readables["testsheet"])
+	if err != nil {
+		log.Fatalf("Unable to retrieve data from sheet: %v", err)
+	}
 
-        if len(resp.Values) == 0 {
-                fmt.Println("No data found.")
-        } else {
-                fmt.Println("Name, Major:")
-                for _, row := range resp.Values {
-                        // Print columns A and E, which correspond to indices 0 and 4.
-                        fmt.Printf("%s, %s\n", row[0], row[4])
-                }
-        }
+	if len(resp.Values) == 0 {
+		fmt.Println("No data found.")
+	} else {
+		fmt.Println("Name, Major:")
+		for _, row := range resp.Values {
+			// Print columns A and E, which correspond to indices 0 and 4.
+			fmt.Printf("%s, %s\n", row[0], row[4])
+		}
+	}
 }
 ```
 
@@ -167,27 +176,41 @@ func main() {
 package main
 
 import (
-        "fmt"
-        "log"
+	"log"
+	"os"
 
-        "github.com/sigma-firma/gsheet"
+	"github.com/sigma-firma/gsheet"
+	"google.golang.org/api/gmail/v1"
+	"google.golang.org/api/sheets/v4"
 )
 
-func main() {                                                                          
+func main() {
+	// Instantiate a new *Access struct with essential values
+	var access *gsheet.Access = gsheet.NewAccess(
+		os.Getenv("HOME")+"/credentials/credentials.json",
+		os.Getenv("HOME")+"/credentials/token.json",
+		[]string{gmail.GmailComposeScope, sheets.SpreadsheetsScope},
+	)
+	// Connect to the API
+	sh := access.Sheets()
 
-	var row []interface{} = []interface{}{"hello A1","world B1"}))
+	var row []interface{} = []interface{}{"hello A1", "world B1"}
 
-	var req *gsheet.Spread = &gsheet.Spread{
-		ID:               "1cZVwQaY8LqsIUwzbCm_yG8tcR5RDog9jD1sHJtF9mSA",
-		WriteRange:       "A1",
-		Vals:             row,
+	var req *gsheet.SpreadSheet = &gsheet.SpreadSheet{
+		// The ID can be found in the URL of the spreadsheet when you open it
+		// in a web browser
+		ID: "SPEADSHEET_ID_GOES_HERE",
+		// Docs indicate this should write to the first blank row after this
+		// one.
+		WriteRange: "A1",
+		Vals:       row,
+		// Not sure what it does but I always set it to RAW.
 		ValueInputOption: "RAW",
 	}
 
-	sh := access.Sheets()
-    _, err := sh.AppendRow(req)
+	_, err := sh.AppendRow(req)
 	if err != nil {
-		return err
+		log.Println(err)
 	}
 }
 
