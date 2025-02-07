@@ -272,14 +272,8 @@ func (g *Gmailer) GetMessages(howMany uint) ([]*gmail.Message, error) {
 	return msgs, nil
 }
 
-// *Gmailer.CheckForUnreadByLabel() checks for unread mail matching the
-// specified label. NOTE: When checking your inbox for unread messages, it's
-// not uncommon for it to return thousands of unread messages that you don't
-// know about. To see them in gmail, query your mail for "label:unread". For
-// CheckForUnreadByLabel to work properly you need to mark all mail as read
-// either through gmail or through the MarkAllAsRead() function found in this
-// library.
-func (g *Gmailer) CheckForUnreadByLabel(label string) (int64, error) {
+// *Gmailer.CheckFByLabel() checks for mail matching the specified label.
+func (g *Gmailer) CheckByLabel(label string) (int64, error) {
 	inbox, err := g.Service.Users.Labels.Get("me", label).Do()
 	if err != nil {
 		return -1, err

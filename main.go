@@ -70,12 +70,21 @@ type Access struct {
 	// If modifying these scopes, delete your previously saved token.json.
 	Scopes []string
 	// Config is mostly generated and used by the API.
-	Config    *oauth2.Config
-	Token     *oauth2.Token
-	GmailAPI  *gmail.Service
+	Config *oauth2.Config
+	// The token is the token used to authenticate with the API, and will need
+	// to be refreshed using *Access.Refresh()
+	Token *oauth2.Token
+	// GmailAPI is used as an alternative access point to the Gmail API
+	// service, if you don't wish to use the Gmailer struct. see: gmail.go
+	GmailAPI *gmail.Service
+	// SheetsAPI is used as an alternative access point to the Sheets API
+	// service, if you don't wish to use the Sheeter struct. see: sheets.go
 	SheetsAPI *sheets.Service
 }
 
+// NewAccess() instantiates a new *Access struct, initializing it with default
+// values most people will probably need, and authenticated the user, taking
+// them through the manual authentication process as necessary (see READEME.md)
 func NewAccess(credentialsPath, tokenPath string, scopes []string) *Access {
 	var a *Access = &Access{
 		Context:         context.Background(),
@@ -85,14 +94,21 @@ func NewAccess(credentialsPath, tokenPath string, scopes []string) *Access {
 		Config:          &oauth2.Config{},
 		Token:           &oauth2.Token{},
 	}
+	// see: auth.go
 	a.ReadCredentials()
 	return a
 }
+
+// *Access.Connect(any) connects us to a service. At this time gsheet only
+// supports the Gmail API, the Google Sheets API, or both. Pass either of the
+// following empty (as empty structs):
+// *gmail.Sevice{}
+// *sheets.Service{}
 func (a *Access) Connect(service any) {
 	switch service.(type) {
 	case *gmail.Service:
-		a.Gmail()
+		a.Gmail() // see: gmail.go
 	case *sheets.Service:
-		a.Sheets()
+		a.Sheets() // see: sheets.go
 	}
 }

@@ -30,12 +30,14 @@ import (
 // Sheeter is a wrapper around the *sheets.Service type, giving us access to
 // the Google Sheets API service.
 type Sheeter struct {
-	Service *sheets.Service
+	Service      *sheets.Service
+	DefaultSheet *SpreadSheet
+	Sheets       map[string]*SpreadSheet
 }
 
-// Spread is passed as the argument to the sheets related functions found
+// SpreadSheet is passed as the argument to the sheets related functions found
 // herein.
-type Spread struct {
+type SpreadSheet struct {
 	ID               string
 	WriteRange       string
 	Vals             []interface{}
@@ -53,11 +55,11 @@ func (a *Access) Sheets() *Sheeter {
 		log.Println(err)
 	}
 	a.SheetsAPI = service
-	return &Sheeter{a.SheetsAPI}
+	return &Sheeter{Service: a.SheetsAPI}
 }
 
-// *Sheeter.AppendRow() is used to write to a spreadsheet
-func (s *Sheeter) AppendRow(sht *Spread) (*sheets.AppendValuesResponse, error) {
+// *Sheeter.AppendRow() is used to append a row to a spreadsheet
+func (s *Sheeter) AppendRow(sht *SpreadSheet) (*sheets.AppendValuesResponse, error) {
 	var vr sheets.ValueRange
 	vr.Values = append(vr.Values, sht.Vals)
 
@@ -69,6 +71,6 @@ func (s *Sheeter) AppendRow(sht *Spread) (*sheets.AppendValuesResponse, error) {
 }
 
 // *Sheeter.Read() is used to read from a spreadsheet
-func (s *Sheeter) Read(sht *Spread) (*sheets.ValueRange, error) {
+func (s *Sheeter) Read(sht *SpreadSheet) (*sheets.ValueRange, error) {
 	return s.Service.Spreadsheets.Values.Get(sht.ID, sht.ReadRange).Do()
 }

@@ -35,11 +35,12 @@ https://developers.google.com/sheets/api/quickstart/go
 That link will walk you through enabling the sheets API through the Google 
 Cloud console, and creating and downloading your `credentials.json` file.
 
+
 Once you have enabled the API, download the `credentials.json` file and store 
 somewhere safe. You can connect to the Gmail and Sheets APIs using the 
 following:
 
-```
+```go
 func main() {
 	var access *Access = NewAccess(
 		os.Getenv("HOME")+"/credentials/credentials.json",
@@ -56,9 +57,48 @@ func main() {
 
 ```
 
+## Features 
+
+  - Send emails
+  - Mark emails (read/unread/important/etc)
+  - Get labels used in inbox
+  - Get emails by query (eg "in:sent after:2017/01/01 before:2017/01/30")
+  - Get email metadata
+  - Get email main body ("text/plain", "text/html")
+  - Get the number of unread messages
+  - Convert email dates to human readable format
+  - Append row to spread sheet in google Sheets
+  - Read data from spread sheet
+
+### Setting up credentials/tokens and refreshing them
+
+```go
+package main
+
+import (
+        "fmt"
+        "log"
+
+        "github.com/sigma-firma/gsheet"
+)
+
+// Instantiate a new *Access struct with essential values
+var access *gsheet.Access = gsheet.NewAccess(
+	os.Getenv("HOME")+"/credentials/credentials.json",
+	os.Getenv("HOME")+"/credentials/quickstart.json",
+	[]string{gmail.GmailComposeScope, sheets.SpreadsheetsScope},
+)
+
+// Connect to the Gmail API
+var gm *gsheet.Gmailer = access.Gmail()
+
+// Connect to the Sheets API
+var sh *gsheet.Sheeter = access.Gmail()
+```
+
 ### Reading values from a spreadsheet:
 
-```
+```go
 func main() {                                                                          
         package main
 
@@ -66,25 +106,21 @@ func main() {
                 "fmt"
                 "log"
 
-                "github.com/hartsfield/ohsheet"
+                "github.com/sigma-firma/gsheet"
         )
 
         // Connect to the API                                                          
-        sheet := &ohsheet.Access{                                                      
-                Token:       "token.json",                                             
-                Credentials: "credentials.json",                                       
-                // You may want a ReadOnly scope here instead
-                Scopes:      []string{"https://www.googleapis.com/auth/spreadsheets"}, 
-        }                                                                              
-        srv := sheet.Connect()                                                         
+        sh := access.Sheets()
 
 
         // Prints the names and majors of students in a sample spreadsheet:
         // https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
-        spreadsheetId := "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
-        readRange := "Class Data!A2:E"
-        
-        resp, err := sheet.Read(srv, spreadsheetId, readRange)
+       	var req *gsheet.Spread = &gsheet.Spread{
+                ID:               "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
+                ReadRange:        "Class Data!A2:E",
+       }
+ 
+        resp, err := sh.Read(req)
         if err != nil {
                 fmt.Fatalf("Unable to retrieve data from sheet: %v", err)
         }
@@ -103,111 +139,64 @@ func main() {
 
 ### Writing values to a spreadsheet:
 
-```
+```go
 package main
 
 import (
         "fmt"
         "log"
 
-        "github.com/hartsfield/ohsheet"
+        "github.com/sigma-firma/gsheet"
 )
 
 func main() {                                                                          
-        // Connect to the API                                                          
-        sheet := &ohsheet.Access{                                                      
-                Token:       "token.json",                                             
-                Credentials: "credentials.json",                                       
-                Scopes:      []string{"https://www.googleapis.com/auth/spreadsheets"}, 
-        }                                                                              
-        srv := sheet.Connect()                                                         
 
-        spreadsheetId := "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
+	var row []interface{} = []interface{}{"hello A1","world B1"}))
 
-        // Write to the sheet
-        writeRange := "K2"
-        data := []interface{}{"test data 3"}
-        res, err := sheet.Write(srv, spreadsheetId, writeRange, data)
-        if err != nil {
-                log.Fatalf("Unable to retrieve data from sheet: %v", err)
-        }
-        fmt.Println(res)
+	var req *gsheet.Spread = &gsheet.Spread{
+		ID:               "1cZVwQaY8LqsIUwzbCm_yG8tcR5RDog9jD1sHJtF9mSA",
+		WriteRange:       "A1",
+		Vals:             row,
+		ValueInputOption: "RAW",
+	}
+
+	sh := access.Sheets()
+    _, err := sh.AppendRow(req)
+	if err != nil {
+		return err
+	}
 }
-`
 
-A go package for managing gmail Tokens/credentials. 
+```
 
-# USE:
+# GMAIL:
 
+### Check for new unread messages
 
+```go
 	func main() {
 			// Connect to the Gmail API service. Here, we use a context and provide a
 			// scope. The scope is used by the Gamil API to determine your privilege
 			// level. gmailAPI.ConnectToService is a variadic function and thus can be
 			// passed any number of scopes. For more information on scopes see:
 			// https://developers.google.com/gmail/api/auth/scopes
-			ctx := context.Background()
-			srv := gmailAPI.ConnectToService(ctx, gmail.GmailComposeScope)
+            gm := access.Gmail()
 
-			// Get a list of your unread messages
-			inbox, err := srv.Users.Messages.List("me").Q("in:UNREAD").Do()
+			// Check if you have any unread messages
+			count, err := gm.CheckForUnread()
 			if err != nil {
 					fmt.Println(err)
 			}
+            if count >0 {
+                    fmt.Println("You've got mail.")
+            }
 
-			for _, message := range inbox.Messages {
-					// To get the message content, you must make a second call
-					// to the gmail API for each individual ID.
-					msg, _ := srv.Users.Messages.Get("me", message.Id).Do()
-					fmt.Println(msg.Snippet)
-			}
 	}
 
-
-#### Turning on the gmail API
-
-  - Use this wizard (https://console.developers.google.com/start/api?id=gmail) 
-  to create or select a project in the Google Developers Console and 
-  automatically turn on the API. Click Continue, 
-  then Go to credentials.
- 
-  - On the Add credentials to your project page, click the Cancel button.
- 
-  - At the top of the page, select the OAuth consent screen tab. Select an 
-  Email address, enter a Product name if not already set, and click the Save 
-  button.
- 
-  - Select the Credentials tab, click the Create credentials button and select
-  OAuth client ID.
- 
-  - Select the application type Other, enter the name "Gmail API Quickstart", 
-  and click the Create button.
- 
-  - Click OK to dismiss the resulting dialog.
- 
-  - Click the file_download (Download JSON) button to the right of the client 
-  ID.
- 
-  - Move this file to your working directory and rename it client_secret.json.
+```
 
 
-Also see our other package, [inboxer](https://gitlab.com/sigma-firma/inboxer), 
-which makes performing basic actions on your inbox much more straight-forward. 
-
-
-Package gsheet is a Go package for checking your gmail inbox, it has the following features:
-
-  - Send emails
-  - Mark emails (read/unread/important/etc)
-  - Get labels used in inbox
-  - Get emails by query (eg "in:sent after:2017/01/01 before:2017/01/30")
-  - Get email metadata
-  - Get email main body ("text/plain", "text/html")
-  - Get the number of unread messages
-  - Convert email dates to human readable format
-
-#  USE
-
+### Query
 
 ```go
 package main
@@ -217,16 +206,13 @@ import (
         "fmt"
 
         "github.com/sigma-firma/gmailAPI"
-        "github.com/sigma-firma/inboxer"
+        "github.com/sigma-firma/gm"
         gmail "google.golang.org/api/gmail/v1"
 )
 
 func main() {
-        // Connect to the gmail API service.
-        ctx := context.Background()
-        srv := gmailAPI.ConnectToService(ctx, gmail.MailGoogleComScope)
-
-        msgs, err := inboxer.Query(srv, "category:forums after:2017/01/01 before:2017/01/30")
+        gm := access.Gmail()
+        msgs, err := gm.Query("category:forums after:2017/01/01 before:2017/01/30")
         if err != nil {
                 fmt.Println(err)
         }
@@ -234,12 +220,12 @@ func main() {
         // Range over the messages
         for _, msg := range msgs {
                 fmt.Println("========================================================")
-                time, err := inboxer.ReceivedTime(msg.InternalDate)
+                time, err := gm.ReceivedTime(msg.InternalDate)
                 if err != nil {
                         fmt.Println(err)
                 }
                 fmt.Println("Date: ", time)
-                md := inboxer.GetPartialMetadata(msg)
+                md := gm.GetPartialMetadata(msg)
                 fmt.Println("From: ", md.From)
                 fmt.Println("Sender: ", md.Sender)
                 fmt.Println("Subject: ", md.Subject)
@@ -249,7 +235,7 @@ func main() {
                 fmt.Println("Mailing List: ", md.MailingList)
                 fmt.Println("Thread-Topic: ", md.ThreadTopic)
                 fmt.Println("Snippet: ", msg.Snippet)
-                body, err := inboxer.GetBody(msg, "text/plain")
+                body, err := gm.GetBody(msg, "text/plain")
                 if err != nil {
                         fmt.Println(err)
                 }
@@ -267,17 +253,13 @@ import (
 	"log"
 
 	"github.com/sigma-firma/gmailAPI"
-	"github.com/sigma-firma/inboxer"
+	"github.com/sigma-firma/gm"
 	gmail "google.golang.org/api/gmail/v1"
 )
 
 func main() {
-    // Connect to the gmail API service.
-	ctx := context.Background()
-	srv := gmailAPI.ConnectToService(ctx, gmail.MailGoogleComScope)
-
     // Create a message
-	var msg *inboxer.Msg = &inboxer.Msg{
+	var msg *gsheet.Msg = &gsheet.Msg{
 		From:    "me",  // the authenticated user
 		To:      "leadership@firma.com",
 		Subject: "testing",
@@ -285,40 +267,21 @@ func main() {
 	}
 
     // send the email with the message
-	err := msg.Send(srv)
+	err := msg.Send()
 	if err != nil {
 		log.Println(err)
 	}
 }
 ```
-## QUERIES
 
-```go
-func main() {
-        // Connect to the gmail API service.
-        ctx := context.Background()
-        srv := gmailAPI.ConnectToService(ctx, gmail.GmailComposeScope)
-        msgs, err := inboxer.Query(srv, "category:forums after:2017/01/01 before:2017/01/30")
-        if err != nil {
-                fmt.Println(err)
-        }
-
-        // Range over the messages
-        for _, msg := range msgs {
-                // do stuff
-        }
-}
-
-```
 ## MARKING EMAILS
 
 ```go
 func main() {
         // Connect to the gmail API service.
-        ctx := context.Background()
-        srv := gmailAPI.ConnectToService(ctx, gmail.GmailComposeScope)
+        gm := access.Gmail()
 
-        msgs, err := inboxer.Query(srv, "category:forums after:2017/01/01 before:2017/01/30")
+        msgs, err := gm.Query("category:forums after:2017/01/01 before:2017/01/30")
         if err != nil {
                 fmt.Println(err)
         }
@@ -330,7 +293,7 @@ func main() {
 
         // Range over the messages
         for _, msg := range msgs {
-                msg, err := inboxer.MarkAs(srv, msg, req)
+                msg, err := gm.MarkAs(msg, req)
         }
 }
 
@@ -340,10 +303,9 @@ func main() {
 ```go
 func main() {
         // Connect to the gmail API service.
-        ctx := context.Background()
-        srv := gmailAPI.ConnectToService(ctx, gmail.GmailComposeScope)
+        gm := access.Gmail()
 
-        inboxer.MarkAllAsRead(srv)
+        gm.MarkAllAsRead()
 }
 ```
 ## GETTING LABELS
@@ -351,10 +313,9 @@ func main() {
 ```go
 func main() {
         // Connect to the gmail API service.
-        ctx := context.Background()
-        srv := gmailAPI.ConnectToService(ctx, gmail.GmailComposeScope)
+        gm := access.Gmail()
 
-        labels, err := inboxer.GetLabels(srv)
+        labels, err := gm.GetLabels()
         if err != nil {
                 fmt.Println(err)
         }
@@ -370,10 +331,9 @@ func main() {
 ```go
 func main() {
         // Connect to the gmail API service.
-        ctx := context.Background()
-        srv := gmailAPI.ConnectToService(ctx, gmail.MailGoogleComScope)
+        gm := access.Gmail()
 
-        msgs, err := inboxer.Query(srv, "category:forums after:2017/01/01 before:2017/01/30")
+        msgs, err := gm.Query("category:forums after:2017/01/01 before:2017/01/30")
         if err != nil {
                 fmt.Println(err)
         }
@@ -381,7 +341,7 @@ func main() {
         // Range over the messages
         for _, msg := range msgs {
                 fmt.Println("========================================================")
-                md := inboxer.GetPartialMetadata(msg)
+                md := gm.GetPartialMetadata(msg)
                 fmt.Println("From: ", md.From)
                 fmt.Println("Sender: ", md.Sender)
                 fmt.Println("Subject: ", md.Subject)
@@ -399,16 +359,15 @@ func main() {
 ```go
 func main() {
         // Connect to the gmail API service.
-        ctx := context.Background()
-        srv := gmailAPI.ConnectToService(ctx, gmail.GmailComposeScope)
-        msgs, err := inboxer.Query(srv, "category:forums after:2017/01/01 before:2017/01/30")
+        gm := access.Gmail()
+        msgs, err := gm.Query("category:forums after:2017/01/01 before:2017/01/30")
         if err != nil {
                 fmt.Println(err)
         }
 
         // Range over the messages
         for _, msg := range msgs {
-                body, err := inboxer.GetBody(msg, "text/plain")
+                body, err := gm.GetBody(msg, "text/plain")
                 if err != nil {
                         fmt.Println(err)
                 }
@@ -420,15 +379,14 @@ func main() {
 ## GETTING THE NUMBER OF UNREAD MESSAGES
 
 ```go
-// NOTE: to actually view the email text use inboxer.Query and query for unread
+// NOTE: to actually view the email text use gm.Query and query for unread
 // emails.
 func main() {
         // Connect to the gmail API service.
-        ctx := context.Background()
-        srv := gmailAPI.ConnectToService(ctx, gmail.GmailComposeScope)
+        gm := access.Gmail()
 
         // num will be -1 on err
-        num, err :=	inboxer.CheckForUnread(srv)
+        num, err :=	gm.CheckForUnread()
         if err != nil {
                 fmt.Println(err)
         }
@@ -443,10 +401,9 @@ func main() {
 // Convert UNIX time stamps to human readable format
 func main() {
         // Connect to the gmail API service.
-        ctx := context.Background()
-        srv := gmailAPI.ConnectToService(ctx, gmail.GmailComposeScope)
+        gm := access.Gmail()
 
-        msgs, err := inboxer.Query(srv, "category:forums after:2017/01/01 before:2017/01/30")
+        msgs, err := gm.Query("category:forums after:2017/01/01 before:2017/01/30")
         if err != nil {
                 fmt.Println(err)
         }
@@ -454,7 +411,7 @@ func main() {
         // Range over the messages
         for _, msg := range msgs {
                 // Convert the date
-                time, err := inboxer.ReceivedTime(msg.InternalDate)
+                time, err := gm.ReceivedTime(msg.InternalDate)
                 if err != nil {
                         fmt.Println(err)
                 }
@@ -471,10 +428,9 @@ func main() {
 // because they'll likely be useful to anyone working with this package.
 func main() {
         // Connect to the gmail API service.
-        ctx := context.Background()
-        srv := gmailAPI.ConnectToService(ctx, gmail.GmailComposeScope)
+        gm := access.Gmail()
 
-        msgs, err := inboxer.Query(srv, "category:forums after:2017/01/01 before:2017/01/30")
+        msgs, err := gm.Query("category:forums after:2017/01/01 before:2017/01/30")
         if err != nil {
                 fmt.Println(err)
         }
@@ -490,10 +446,12 @@ func main() {
 ## MORE ON CREDENTIALS:
 
 For gsheet to work you must have a gmail account and a file containing your 
-authorization info in the root directory of your project. To obtain credentials 
-please see step one of this guide: https://developers.google.com/gmail/api/quickstart/go
+authorization info in the directory you will specify when setting up gsheet. 
+To obtain credentials please see step one of this guide: 
 
- Turning on the gmail API
+https://developers.google.com/gmail/api/quickstart/go
+
+Turning on the gmail API (should be similar for the Sheets API)
 
  - Use this wizard (https://console.developers.google.com/start/api?id=gmail) to create or select a project in the Google Developers Console and automatically turn on the API. Click Continue, then Go to credentials.
 
@@ -510,5 +468,3 @@ please see step one of this guide: https://developers.google.com/gmail/api/quick
  - Click the file_download (Download JSON) button to the right of the client ID.
 
  - Move this file to your working directory and rename it client_secret.json.
-
-
