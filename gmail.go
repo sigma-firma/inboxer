@@ -37,6 +37,7 @@ import (
 type Gmailer struct {
 	Service *gmail.Service
 	Msgs    []*Msg
+	Msg
 }
 
 // *Access.Gmail() gives usaccess to the Google Gmail API via *Gmailer.Service

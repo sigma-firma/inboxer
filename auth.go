@@ -26,6 +26,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -52,6 +53,22 @@ func (a *Access) ReadCredentials() {
 //////////////////////              TOKEN               ///////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
+// Retrieve a token, saves the token, then returns the generated client.
+func (a *Access) GetClient() *http.Client {
+	// The file [filename] stores the user's access and refresh tokens, and is
+	// created automatically when the authorization flow completes for the first
+	// time.
+	err := a.TokenFromFile()
+	if err != nil {
+		a.TokenFromWeb()
+	}
+	err = a.SaveToken()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return a.Config.Client(a.Context, a.Token)
+}
+
 // Retrieves a token from a local file.
 func (a *Access) TokenFromFile() error {
 	f, err := os.Open(a.TokenPath)
@@ -69,7 +86,7 @@ func (a *Access) TokenFromFile() error {
 }
 
 // Request a token from the web, then returns the retrieved token.
-func (a *Access) GetTokenFromWeb() {
+func (a *Access) TokenFromWeb() {
 	authURL := a.Config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
 	fmt.Printf("Go to the following link in your browser then type the "+
 		"authorization code: \n%v\n", authURL)
@@ -84,6 +101,7 @@ func (a *Access) GetTokenFromWeb() {
 		log.Fatalf("Unable to retrieve token from web: %v", err)
 	}
 	a.Token = tok
+	a.LastRefreshed = time.Now()
 }
 
 // Saves a token to a file path.
@@ -94,21 +112,26 @@ func (a *Access) SaveToken() error {
 		log.Fatalf("Unable to cache oauth token: %v", err)
 	}
 	defer f.Close()
+	a.LastRefreshed = time.Now()
 	return json.NewEncoder(f).Encode(a.Token)
 }
 
-// Retrieve a token, saves the token, then returns the generated client.
-func (a *Access) GetClient() *http.Client {
-	// The file [filename] stores the user's access and refresh tokens, and is
-	// created automatically when the authorization flow completes for the first
-	// time.
-	err := a.TokenFromFile()
-	if err != nil {
-		a.GetTokenFromWeb()
+// *Access.Cycle(rate time.Duration) is used to cycle (refresh) the token, if
+// ran with rate = 0 it'll refresh every 23 hours as default.
+func (a *Access) Cycle(rate time.Duration) {
+	if rate != 0 {
+		a.RefreshRate = time.NewTicker(rate)
 	}
-	err = a.SaveToken()
-	if err != nil {
-		log.Fatal(err)
-	}
-	return a.Config.Client(context.Background(), a.Token)
+	go func() {
+		for {
+			<-a.RefreshRate.C
+			t, err := a.Config.TokenSource(a.Context, a.Token).Token()
+			if err != nil {
+				log.Println(err)
+			}
+			a.Token = t
+			a.LastRefreshed = time.Now()
+			a.RefreshRate.Reset(rate)
+		}
+	}()
 }
