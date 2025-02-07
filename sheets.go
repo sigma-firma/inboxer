@@ -27,25 +27,11 @@ import (
 	"google.golang.org/api/sheets/v4"
 )
 
-// Sheeter is a wrapper around the *sheets.Service type, giving us access to
-// the Google Sheets API service.
-type Sheeter struct {
-	Service      *sheets.Service
-	DefaultSheet *SpreadSheet
-	Sheets       map[string]*SpreadSheet
-}
+///////////////////////////////////////////////////////////////////////////////
+///////////////////     Access the Google Sheets API     //////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
-// SpreadSheet is passed as the argument to the sheets related functions found
-// herein.
-type SpreadSheet struct {
-	ID               string
-	WriteRange       string
-	Vals             []interface{}
-	ReadRange        string
-	ValueInputOption string
-}
-
-// *Access.Sheets() gives usaccess to the Google Sheets API via *Sheeter.Service
+// *Access.Sheets() gives access to the Google Sheets API via *Sheeter.Service
 func (a *Access) Sheets() *Sheeter {
 	service, err := sheets.NewService(
 		context.Background(),
@@ -56,6 +42,32 @@ func (a *Access) Sheets() *Sheeter {
 	}
 	a.SheetsAPI = service
 	return &Sheeter{Service: a.SheetsAPI}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////      Use the Google Sheets API       //////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+// gsheet.Sheeter is a wrapper around the *sheets.Service type, giving us access to
+// the Google Sheets API service.
+type Sheeter struct {
+	Service      *sheets.Service
+	DefaultSheet *SpreadSheet
+	// just guess what these could be used for
+	Writables      map[string]*SpreadSheet
+	Readables      map[string]*SpreadSheet
+	ReadWriteables map[string]*SpreadSheet
+	SpreadSheet
+}
+
+// *Sheeter.SpreadSheet is passed as the argument to the sheets related
+// functions found herein.
+type SpreadSheet struct {
+	ID               string
+	WriteRange       string
+	Vals             []interface{}
+	ReadRange        string
+	ValueInputOption string
 }
 
 // *Sheeter.AppendRow() is used to append a row to a spreadsheet

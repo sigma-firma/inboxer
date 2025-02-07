@@ -32,13 +32,9 @@ import (
 	"google.golang.org/api/option"
 )
 
-// Gmailer is a wrapper around the *gmail.Service type, giving us access to
-// the Google Gmail API service.
-type Gmailer struct {
-	Service *gmail.Service
-	Msgs    []*Msg
-	Msg
-}
+///////////////////////////////////////////////////////////////////////////////
+///////////////////     Access the Google Gmail API      //////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
 // *Access.Gmail() gives usaccess to the Google Gmail API via *Gmailer.Service
 func (a *Access) Gmail() *Gmailer {
@@ -50,7 +46,19 @@ func (a *Access) Gmail() *Gmailer {
 	return &Gmailer{Service: a.GmailAPI}
 }
 
-// Msg is an email message, self explanatory
+///////////////////////////////////////////////////////////////////////////////
+///////////////////       Use the Google Gmail API       //////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+// Gmailer is a wrapper around the *gmail.Service type, giving us access to
+// the Google Gmail API service.
+type Gmailer struct {
+	Service *gmail.Service
+	Msgs    []*Msg
+	Msg
+}
+
+// Gmailer.Msg is an email message, self explanatory
 type Msg struct {
 	From      string
 	To        string
@@ -61,6 +69,7 @@ type Msg struct {
 	Markup    string
 	Bytes     []byte
 	Formed    *gmail.Message
+	PartialMetadata
 }
 
 // *Msg.Form() forms the message into a proper *gmail.Message type.
@@ -78,9 +87,9 @@ func (m *Msg) Form() *gmail.Message {
 }
 
 // *Msg.Send() allows us to send mail
-func (m *Msg) Send(gs *gmail.Service) error {
+func (g *Gmailer) Send(m *Msg) error {
 	m.Form()
-	sendCall := gs.Users.Messages.Send(m.From, m.Formed)
+	sendCall := g.Service.Users.Messages.Send(m.From, m.Formed)
 	_, err := sendCall.Do()
 	if err != nil {
 		return err
@@ -147,57 +156,6 @@ func (g *Gmailer) GetBody(msg *gmail.Message, mimeType string) (string, error) {
 		}
 	}
 	return "", errors.New("Couldn't Read Body")
-}
-
-// PartialMetadata stores email metadata. Some fields may sound redundant, but
-// in fact have different contexts. Some are slices of string because the ones
-// that have multiple values are still being sorted from those that don't.
-type PartialMetadata struct {
-	// Sender is the entity that originally created and sent the message
-	Sender string
-	// From is the entity that sent the message to you (e.g. googlegroups). Most
-	// of the time this information is only relevant to mailing lists.
-	From string
-	// Subject is the email subject
-	Subject string
-	// Mailing list contains the name of the mailing list that the email was
-	// posted to, if any.
-	MailingList string
-	// CC is the "carbon copy" list of addresses
-	CC []string
-	// To is the recipient of the email.
-	To []string
-	// ThreadTopic contains the topic of the thread (e.g. google groups threads)
-	ThreadTopic []string
-	// DeliveredTo is who the email was sent to. This can contain multiple
-	// addresses if the email was forwarded.
-	DeliveredTo []string
-}
-
-// *Gmailer.GetPartialMetadata() gets some of the useful metadata from the headers.
-func (g *Gmailer) GetPartialMetadata(msg *gmail.Message) *PartialMetadata {
-	info := &PartialMetadata{}
-	for _, v := range msg.Payload.Headers {
-		switch strings.ToLower(v.Name) {
-		case "sender":
-			info.Sender = v.Value
-		case "from":
-			info.From = v.Value
-		case "subject":
-			info.Subject = v.Value
-		case "mailing-list":
-			info.MailingList = v.Value
-		case "cc":
-			info.CC = append(info.CC, v.Value)
-		case "to":
-			info.To = append(info.To, v.Value)
-		case "thread-Topic":
-			info.ThreadTopic = append(info.ThreadTopic, v.Value)
-		case "delivered-To":
-			info.DeliveredTo = append(info.DeliveredTo, v.Value)
-		}
-	}
-	return info
 }
 
 // *Gmailer.DecodeEmailBody() is used to decode the email body by converting
@@ -309,4 +267,55 @@ func (g *Gmailer) CheckForUnread() (int64, error) {
 // *Gmailer.GetLabels() gets a list of the labels used in the users inbox.
 func (g *Gmailer) GetLabels() (*gmail.ListLabelsResponse, error) {
 	return g.Service.Users.Labels.List("me").Do()
+}
+
+// PartialMetadata stores email metadata. Some fields may sound redundant, but
+// in fact have different contexts. Some are slices of string because the ones
+// that have multiple values are still being sorted from those that don't.
+type PartialMetadata struct {
+	// Sender is the entity that originally created and sent the message
+	Sender string
+	// From is the entity that sent the message to you (e.g. googlegroups). Most
+	// of the time this information is only relevant to mailing lists.
+	From string
+	// Subject is the email subject
+	Subject string
+	// Mailing list contains the name of the mailing list that the email was
+	// posted to, if any.
+	MailingList string
+	// CC is the "carbon copy" list of addresses
+	CC []string
+	// To is the recipient of the email.
+	To []string
+	// ThreadTopic contains the topic of the thread (e.g. google groups threads)
+	ThreadTopic []string
+	// DeliveredTo is who the email was sent to. This can contain multiple
+	// addresses if the email was forwarded.
+	DeliveredTo []string
+}
+
+// *Gmailer.GetPartialMetadata() gets some of the useful metadata from the headers.
+func (msg *Msg) GetPartialMetadata() *PartialMetadata {
+	info := &PartialMetadata{}
+	for _, v := range msg.Form().Payload.Headers {
+		switch strings.ToLower(v.Name) {
+		case "sender":
+			info.Sender = v.Value
+		case "from":
+			info.From = v.Value
+		case "subject":
+			info.Subject = v.Value
+		case "mailing-list":
+			info.MailingList = v.Value
+		case "cc":
+			info.CC = append(info.CC, v.Value)
+		case "to":
+			info.To = append(info.To, v.Value)
+		case "thread-Topic":
+			info.ThreadTopic = append(info.ThreadTopic, v.Value)
+		case "delivered-To":
+			info.DeliveredTo = append(info.DeliveredTo, v.Value)
+		}
+	}
+	return info
 }
