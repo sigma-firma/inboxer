@@ -77,7 +77,7 @@ type Access struct {
 }
 
 func NewAccess(credentialsPath, tokenPath string, scopes []string) *Access {
-	return &Access{
+	var a *Access = &Access{
 		Context:         context.Background(),
 		CredentialsPath: credentialsPath,
 		TokenPath:       tokenPath,
@@ -85,6 +85,8 @@ func NewAccess(credentialsPath, tokenPath string, scopes []string) *Access {
 		Config:          &oauth2.Config{},
 		Token:           &oauth2.Token{},
 	}
+	a.ReadCredentials()
+	return a
 }
 func (a *Access) Connect(service any) {
 	switch service.(type) {
