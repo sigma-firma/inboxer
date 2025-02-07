@@ -63,7 +63,7 @@ type Msg struct {
 }
 
 // *Msg.Form() forms the message into a proper *gmail.Message type.
-func (m *Msg) Form() {
+func (m *Msg) Form() *gmail.Message {
 	var gm *gmail.Message = &gmail.Message{}
 	var m_b []byte = []byte(
 		"From: " + m.From + "\r\n" +
@@ -73,6 +73,7 @@ func (m *Msg) Form() {
 			m.Body)
 	gm.Raw = base64.URLEncoding.EncodeToString(m_b)
 	m.Formed = gm
+	return m.Formed
 }
 
 // *Msg.Send() allows us to send mail
