@@ -24,16 +24,16 @@ A package for the `go` programming language
 
 ## `gsheet` features:
 
-  - Access
+  - **Access**
     - Connect/Authenticate with sheets and/or gmail api using your credentials
       and recieve a refresh token
     - Auto refresh the token every 23 hours by default (can be adjusted)
 
-  - Sheets
+  - **Sheets**
     - Append row to spread sheet in google Sheets
     - Read data from spread sheet
 
-  - Gmail
+  - **Gmail**
     - Send emails
     - Mark emails (read/unread/important/etc)
     - Get labels used in inbox
