@@ -71,7 +71,9 @@ func main() {
 		// Location of token.json, or where/what it should be saved /as.
 		// NOTE: This will automatically download if you don't have it
 		os.Getenv("HOME")+"/credentials/token.json",
-		// Scopes
+        // Provided here are the scopes. Scopes are used by the API to 
+        // determine your privilege level. 
+	
 		[]string{
 			gmail.GmailComposeScope,
 			sheets.SpreadsheetsScope,
@@ -134,15 +136,17 @@ import (
 	"google.golang.org/api/gmail/v1"
 	"google.golang.org/api/sheets/v4"
 )
-
+// Instantiate a new *Access struct with essential values
+var access *gsheet.Access = gsheet.NewAccess(
+	os.Getenv("HOME")+"/credentials/credentials.json",
+	os.Getenv("HOME")+"/credentials/token.json",
+    // Provided here are the scopes. Scopes are used by the API to 
+    // determine your privilege level. 
+	[]string{
+		sheets.SpreadsheetsScope,
+	})
 func main() {
-	// Instantiate a new *Access struct with essential values
-	var access *gsheet.Access = gsheet.NewAccess(
-		os.Getenv("HOME")+"/credentials/credentials.json",
-		os.Getenv("HOME")+"/credentials/token.json",
-		[]string{gmail.GmailComposeScope, sheets.SpreadsheetsScope},
-	)
-	// Connect to the API
+
 	sh := access.Sheets()
 
 	// Prints the names and majors of students in a sample spreadsheet:
@@ -184,13 +188,18 @@ import (
 	"google.golang.org/api/sheets/v4"
 )
 
+
+// Instantiate a new *Access struct with essential values
+var access *gsheet.Access = gsheet.NewAccess(
+	os.Getenv("HOME")+"/credentials/credentials.json",
+	os.Getenv("HOME")+"/credentials/token.json",
+    // Provided here are the scopes. Scopes are used by the API to 
+    // determine your privilege level. 
+	[]string{
+		sheets.SpreadsheetsScope,
+	})
+
 func main() {
-	// Instantiate a new *Access struct with essential values
-	var access *gsheet.Access = gsheet.NewAccess(
-		os.Getenv("HOME")+"/credentials/credentials.json",
-		os.Getenv("HOME")+"/credentials/token.json",
-		[]string{gmail.GmailComposeScope, sheets.SpreadsheetsScope},
-	)
 	// Connect to the API
 	sh := access.Sheets()
 
@@ -221,12 +230,21 @@ func main() {
 ### Check for new unread messages
 
 ```go
+
+// Instantiate a new *Access struct with essential values
+var access *gsheet.Access = gsheet.NewAccess(
+	os.Getenv("HOME")+"/credentials/credentials.json",
+	os.Getenv("HOME")+"/credentials/token.json",
+    // Provided here are the scopes. Scopes are used by the API to 
+    // determine your privilege level. 
+	[]string{
+		gmail.GmailLabelsScope,
+		gmail.GmailModifyScope,
+	})
+
+
 	func main() {
-			// Connect to the Gmail API service. Here, we use a context and provide a
-			// scope. The scope is used by the Gamil API to determine your privilege
-			// level. gmailAPI.ConnectToService is a variadic function and thus can be
-			// passed any number of scopes. For more information on scopes see:
-			// https://developers.google.com/gmail/api/auth/scopes
+
             gm := access.Gmail()
 
 			// Check if you have any unread messages
@@ -256,6 +274,19 @@ import (
         "github.com/sigma-firma/gm"
         gmail "google.golang.org/api/gmail/v1"
 )
+
+// Instantiate a new *Access struct with essential values
+var access *gsheet.Access = gsheet.NewAccess(
+	os.Getenv("HOME")+"/credentials/credentials.json",
+	os.Getenv("HOME")+"/credentials/token.json",
+    // Provided here are the scopes. Scopes are used by the API to 
+    // determine your privilege level. 
+	[]string{
+		gmail.GmailComposeScope,
+		gmail.GmailLabelsScope,
+		gmail.GmailModifyScope,
+	})
+
 
 func main() {
         gm := access.Gmail()
@@ -306,6 +337,20 @@ import (
 	gmail "google.golang.org/api/gmail/v1"
 )
 
+// Instantiate a new *Access struct with essential values
+var access *gsheet.Access = gsheet.NewAccess(
+	os.Getenv("HOME")+"/credentials/credentials.json",
+	os.Getenv("HOME")+"/credentials/token.json",
+    // Provided here are the scopes. Scopes are used by the API to 
+    // determine your privilege level. 
+	[]string{
+		gmail.GmailComposeScope,
+		gmail.GmailLabelsScope,
+		gmail.GmailSendScope,
+		gmail.GmailModifyScope,
+	})
+
+
 func main() {
     // Create a message
 	var msg *gsheet.Msg = &gsheet.Msg{
@@ -326,6 +371,19 @@ func main() {
 ### Marking emails
 
 ```go
+
+// Instantiate a new *Access struct with essential values
+var access *gsheet.Access = gsheet.NewAccess(
+	os.Getenv("HOME")+"/credentials/credentials.json",
+	os.Getenv("HOME")+"/credentials/token.json",
+    // Provided here are the scopes. Scopes are used by the API to 
+    // determine your privilege level. 
+	[]string{
+		gmail.GmailLabelsScope,
+		gmail.GmailModifyScope,
+	})
+
+
 func main() {
         // Connect to the gmail API service.
         gm := access.Gmail()
@@ -350,6 +408,20 @@ func main() {
 ### Mark all "unread" emails as "read"
 
 ```go
+
+// Instantiate a new *Access struct with essential values
+var access *gsheet.Access = gsheet.NewAccess(
+	os.Getenv("HOME")+"/credentials/credentials.json",
+	os.Getenv("HOME")+"/credentials/token.json",
+    // Provided here are the scopes. Scopes are used by the API to 
+    // determine your privilege level. 
+	[]string{
+		gmail.GmailComposeScope,
+		gmail.GmailLabelsScope,
+		gmail.GmailModifyScope,
+	})
+
+
 func main() {
         // Connect to the gmail API service.
         gm := access.Gmail()
@@ -359,6 +431,18 @@ func main() {
 ### Getting labels
 
 ```go
+
+// Instantiate a new *Access struct with essential values
+var access *gsheet.Access = gsheet.NewAccess(
+	os.Getenv("HOME")+"/credentials/credentials.json",
+	os.Getenv("HOME")+"/credentials/token.json",
+    // Provided here are the scopes. Scopes are used by the API to 
+    // determine your privilege level. 
+	[]string{
+		gmail.GmailLabelsScope,
+	})
+
+
 func main() {
         // Connect to the gmail API service.
         gm := access.Gmail()
@@ -377,6 +461,20 @@ func main() {
 ### Metadata
 
 ```go
+
+// Instantiate a new *Access struct with essential values
+var access *gsheet.Access = gsheet.NewAccess(
+	os.Getenv("HOME")+"/credentials/credentials.json",
+	os.Getenv("HOME")+"/credentials/token.json",
+    // Provided here are the scopes. Scopes are used by the API to 
+    // determine your privilege level. 
+	[]string{
+		gmail.GmailComposeScope,
+		gmail.GmailLabelsScope,
+		gmail.GmailModifyScope,
+	})
+
+
 func main() {
         // Connect to the gmail API service.
         gm := access.Gmail()
@@ -405,6 +503,20 @@ func main() {
 ### Getting the email body
 
 ```go
+
+// Instantiate a new *Access struct with essential values
+var access *gsheet.Access = gsheet.NewAccess(
+	os.Getenv("HOME")+"/credentials/credentials.json",
+	os.Getenv("HOME")+"/credentials/token.json",
+    // Provided here are the scopes. Scopes are used by the API to 
+    // determine your privilege level. 
+	[]string{
+		gmail.GmailComposeScope,
+		gmail.GmailLabelsScope,
+		gmail.GmailModifyScope,
+	})
+
+
 func main() {
         // Connect to the gmail API service.
         gm := access.Gmail()
@@ -427,6 +539,18 @@ func main() {
 ### Getting the number of unread messages
 
 ```go
+
+// Instantiate a new *Access struct with essential values
+var access *gsheet.Access = gsheet.NewAccess(
+	os.Getenv("HOME")+"/credentials/credentials.json",
+	os.Getenv("HOME")+"/credentials/token.json",
+    // Provided here are the scopes. Scopes are used by the API to 
+    // determine your privilege level. 
+	[]string{
+		gmail.GmailLabelsScope,
+	})
+
+
 // NOTE: to actually view the email text use gm.Query and query for unread
 // emails.
 func main() {
@@ -446,6 +570,20 @@ func main() {
 ### Converting dates
 
 ```go
+
+// Instantiate a new *Access struct with essential values
+var access *gsheet.Access = gsheet.NewAccess(
+	os.Getenv("HOME")+"/credentials/credentials.json",
+	os.Getenv("HOME")+"/credentials/token.json",
+    // Provided here are the scopes. Scopes are used by the API to 
+    // determine your privilege level. 
+	[]string{
+		gmail.GmailComposeScope,
+		gmail.GmailLabelsScope,
+		gmail.GmailModifyScope,
+	})
+
+
 // Convert UNIX time stamps to human readable format
 func main() {
         // Connect to the gmail API service.
@@ -472,6 +610,18 @@ func main() {
 ### Snippet
 
 ```go
+
+// Instantiate a new *Access struct with essential values
+var access *gsheet.Access = gsheet.NewAccess(
+	os.Getenv("HOME")+"/credentials/credentials.json",
+	os.Getenv("HOME")+"/credentials/token.json",
+    // Provided here are the scopes. Scopes are used by the API to 
+    // determine your privilege level. 
+	[]string{
+		gmail.GmailLabelsScope,
+	})
+
+
 // Snippets are not really part of the package but I'm including them in the doc
 // because they'll likely be useful to anyone working with this package.
 func main() {
