@@ -68,12 +68,13 @@ func (a *Access) GetClient() *http.Client {
 
 // Retrieves a token from a local file.
 func (a *Access) TokenFromFile() error {
+	fmt.Println("test", a.TokenPath)
 	f, err := os.Open(a.TokenPath)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
-	tok := &oauth2.Token{}
+	var tok *oauth2.Token = &oauth2.Token{}
 	err = json.NewDecoder(f).Decode(tok)
 	if err != nil {
 		return err
