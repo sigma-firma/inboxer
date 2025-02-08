@@ -70,8 +70,8 @@ func main() {
 		// Location of token.json, or where/what it should be saved /as.
 		// NOTE: This will automatically download if you don't have it
 		os.Getenv("HOME")+"/credentials/token.json",
-        // Provided here are the scopes. Scopes are used by the API to 
-        // determine your privilege level. 
+          // Provided here are the scopes. Scopes are used by the API to 
+          // determine your privilege level. 
 	
 		[]string{
 			gmail.GmailComposeScope,
