@@ -20,12 +20,14 @@
 
 # `gsheet`: Access and manipulate Google Sheets Spreadsheets, and Gmail emails using Googles official [Sheets API](https://developers.google.com/sheets/api/guides/conceptsGoogle) and [Gmail API](https://developers.google.com/gmail/api/guides)
 
+A package for the `go` programming language
+
 ## `gsheet` features:
 
   - Access
     - Connect/Authenticate with sheets and/or gmail api using your credentials
       and recieve a refresh token
-    - Auto refresh the token every 12 hours by default (can be adjusted)
+    - Auto refresh the token every 23 hours by default (can be adjusted)
 
   - Sheets
     - Append row to spread sheet in google Sheets
@@ -63,7 +65,7 @@ following:
 
 ```go
 func main() {
-	var access *gsheet.Access = gsheet.NewAccess(
+        var access *gsheet.Access = gsheet.NewAccess(
         //location of credentials.json
         // NOTE: Get this from Google
         os.Getenv("HOME")+"/credentials/credentials.json",
@@ -73,16 +75,14 @@ func main() {
         // Provided here are the scopes. Scopes are used by the API to 
         // determine your privilege level. 
         []string{
-        	gmail.GmailComposeScope,
-        	sheets.SpreadsheetsScope,
+                gmail.GmailComposeScope,
+                sheets.SpreadsheetsScope,
         })
 
-	// connect to gmail
-	access.Gmail()
-
-	// connect to sheets
-	access.Sheets()
-
+        // connect to gmail
+        access.Gmail()
+        // connect to sheets
+        access.Sheets()
 }
 
 ```
@@ -106,9 +106,9 @@ import (
 
 // Instantiate a new *Access struct with essential values
 var access *gsheet.Access = gsheet.NewAccess(
-	os.Getenv("HOME")+"/credentials/credentials.json",
-	os.Getenv("HOME")+"/credentials/quickstart.json",
-	[]string{gmail.GmailComposeScope, sheets.SpreadsheetsScope},
+        os.Getenv("HOME")+"/credentials/credentials.json",
+        os.Getenv("HOME")+"/credentials/quickstart.json",
+        []string{gmail.GmailComposeScope, sheets.SpreadsheetsScope},
 )
 
 // Connect to the Gmail API
@@ -116,6 +116,8 @@ var gm *gsheet.Gmailer = access.Gmail()
 
 // Connect to the Sheets API
 var sh *gsheet.Sheeter = access.Gmail()
+
+// This example will error. The rest should be okay.
 ```
 
 ## Sheets
@@ -126,47 +128,50 @@ var sh *gsheet.Sheeter = access.Gmail()
 package main
 
 import (
-	"fmt"
-	"log"
-	"os"
+        "fmt"
+        "log"
+        "os"
 
-	"github.com/sigma-firma/gsheet"
-	"google.golang.org/api/gmail/v1"
-	"google.golang.org/api/sheets/v4"
+        "github.com/sigma-firma/gsheet"
+        "google.golang.org/api/gmail/v1"
+        "google.golang.org/api/sheets/v4"
 )
 // Instantiate a new *Access struct with essential values
 var access *gsheet.Access = gsheet.NewAccess(
-	os.Getenv("HOME")+"/credentials/credentials.json",
-	os.Getenv("HOME")+"/credentials/token.json",
-	[]string{
-		sheets.SpreadsheetsScope,
-	})
+        os.Getenv("HOME")+"/credentials/credentials.json",
+        os.Getenv("HOME")+"/credentials/token.json",
+        []string{
+                sheets.SpreadsheetsScope,
+        })
+
 func main() {
 
-	sh := access.Sheets()
+        sh := access.Sheets()
 
-	// Prints the names and majors of students in a sample spreadsheet:
-	// https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
-	sh.Readables = make(map[string]*gsheet.SpreadSheet)
-	sh.Readables["testsheet"] = &gsheet.SpreadSheet{
-		ID:        "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
-		ReadRange: "Class Data!A2:E",
-	}
+        // Prints the names and majors of students in a sample spreadsheet:
+        // https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
+        sh.Readables = make(map[string]*gsheet.SpreadSheet)
+        sh.Readables["testsheet"] = &gsheet.SpreadSheet{
+        // The spreadsheet ID can be found in the URL of the spreadsheet. A
+        // bunch a random bs.
+                ID:        "SPEADSHEET_ID_GOES_HERE",
+                ReadRange: "Class Data!A2:E",
+        }
 
-	resp, err := sh.Read(sh.Readables["testsheet"])
-	if err != nil {
-		log.Fatalf("Unable to retrieve data from sheet: %v", err)
-	}
+        resp, err := sh.Read(sh.Readables["testsheet"])
+        if err != nil {
+                log.Fatalf("Unable to retrieve data from sheet: %v", err)
+        }
 
-	if len(resp.Values) == 0 {
-		fmt.Println("No data found.")
-	} else {
-		fmt.Println("Name, Major:")
-		for _, row := range resp.Values {
-			// Print columns A and E, which correspond to indices 0 and 4.
-			fmt.Printf("%s, %s\n", row[0], row[4])
-		}
-	}
+        if len(resp.Values) == 0 {
+                fmt.Println("No data found.")
+        } else {
+                fmt.Println("Name, Major:")
+                for _, row := range resp.Values {
+                        // Print columns A and E, which correspond to indices 0 and 4.
+                        fmt.Printf("%s, %s\n", row[0], row[4])
+                }
+        }
 }
 ```
 
@@ -176,45 +181,46 @@ func main() {
 package main
 
 import (
-	"log"
-	"os"
+        "log"
+        "os"
 
-	"github.com/sigma-firma/gsheet"
-	"google.golang.org/api/gmail/v1"
-	"google.golang.org/api/sheets/v4"
+        "github.com/sigma-firma/gsheet"
+        "google.golang.org/api/gmail/v1"
+        "google.golang.org/api/sheets/v4"
 )
 
 
 // Instantiate a new *Access struct with essential values
 var access *gsheet.Access = gsheet.NewAccess(
-	os.Getenv("HOME")+"/credentials/credentials.json",
-	os.Getenv("HOME")+"/credentials/token.json",
-	[]string{
-		sheets.SpreadsheetsScope,
-	})
+        os.Getenv("HOME")+"/credentials/credentials.json",
+        os.Getenv("HOME")+"/credentials/token.json",
+        []string{
+                sheets.SpreadsheetsScope,
+        })
 
 func main() {
-	// Connect to the API
-	sh := access.Sheets()
+        // Connect to the API
+        sh := access.Sheets()
 
-	var row []interface{} = []interface{}{"hello A1", "world B1"}
+        var row []interface{} = []interface{}{"hello A1", "world B1"}
 
-	var req *gsheet.SpreadSheet = &gsheet.SpreadSheet{
-		// The ID can be found in the URL of the spreadsheet when you open it
-		// in a web browser
-		ID: "SPEADSHEET_ID_GOES_HERE",
-		// Docs indicate this should write to the first blank row after this
-		// one.
-		WriteRange: "A1",
-		Vals:       row,
-		// Not sure what it does but I always set it to RAW.
-		ValueInputOption: "RAW",
-	}
-
-	_, err := sh.AppendRow(req)
-	if err != nil {
-		log.Println(err)
-	}
+        var req *gsheet.SpreadSheet = &gsheet.SpreadSheet{
+                // The ID can be found in the URL of the spreadsheet when you open it
+                // in a web browser
+                ID: "SPEADSHEET_ID_GOES_HERE",
+                // Docs indicate this should write to the first blank row after this
+                // cell.
+                WriteRange: "A1",
+                Vals:       row,
+                // Not sure what it does but I always set it to RAW.
+                ValueInputOption: "RAW",
+        }
+    
+        // You know the rest, killer :^)
+        _, err := sh.AppendRow(req)
+        if err != nil {
+                log.Println(err)
+        }
 }
 
 ```
@@ -227,28 +233,25 @@ func main() {
 
 // Instantiate a new *Access struct with essential values
 var access *gsheet.Access = gsheet.NewAccess(
-	os.Getenv("HOME")+"/credentials/credentials.json",
-	os.Getenv("HOME")+"/credentials/token.json",
-	[]string{
-		gmail.GmailLabelsScope,
-		gmail.GmailModifyScope,
-	})
+        os.Getenv("HOME")+"/credentials/credentials.json",
+        os.Getenv("HOME")+"/credentials/token.json",
+        []string{
+                gmail.GmailLabelsScope,
+                gmail.GmailModifyScope,
+        })
 
 
-	func main() {
-
-            gm := access.Gmail()
-
-			// Check if you have any unread messages
-			count, err := gm.CheckForUnread()
-			if err != nil {
-					fmt.Println(err)
-			}
-            if count >0 {
-                    fmt.Println("You've got mail.")
-            }
-
-	}
+func main() {
+        gm := access.Gmail()
+        // Check if you have any unread messages
+        count, err := gm.CheckForUnread()
+        if err != nil {
+                fmt.Println(err)
+        }
+        if count >0 {
+                fmt.Println("You've got mail.")
+        }
+}
 
 ```
 
@@ -269,13 +272,13 @@ import (
 
 // Instantiate a new *Access struct with essential values
 var access *gsheet.Access = gsheet.NewAccess(
-	os.Getenv("HOME")+"/credentials/credentials.json",
-	os.Getenv("HOME")+"/credentials/token.json",
-	[]string{
-		gmail.GmailComposeScope,
-		gmail.GmailLabelsScope,
-		gmail.GmailModifyScope,
-	})
+        os.Getenv("HOME")+"/credentials/credentials.json",
+        os.Getenv("HOME")+"/credentials/token.json",
+        []string{
+                gmail.GmailComposeScope,
+                gmail.GmailLabelsScope,
+                gmail.GmailModifyScope,
+        })
 
 
 func main() {
@@ -319,40 +322,40 @@ func main() {
 package main
 
 import (
-	"context"
-	"log"
+        "context"
+        "log"
 
-	"github.com/sigma-firma/gmailAPI"
-	"github.com/sigma-firma/gm"
-	gmail "google.golang.org/api/gmail/v1"
+        "github.com/sigma-firma/gmailAPI"
+        "github.com/sigma-firma/gm"
+        gmail "google.golang.org/api/gmail/v1"
 )
 
 // Instantiate a new *Access struct with essential values
 var access *gsheet.Access = gsheet.NewAccess(
-	os.Getenv("HOME")+"/credentials/credentials.json",
-	os.Getenv("HOME")+"/credentials/token.json",
-	[]string{
-		gmail.GmailComposeScope,
-		gmail.GmailLabelsScope,
-		gmail.GmailSendScope,
-		gmail.GmailModifyScope,
-	})
+        os.Getenv("HOME")+"/credentials/credentials.json",
+        os.Getenv("HOME")+"/credentials/token.json",
+        []string{
+                gmail.GmailComposeScope,
+                gmail.GmailLabelsScope,
+                gmail.GmailSendScope,
+                gmail.GmailModifyScope,
+        })
 
 
 func main() {
-    // Create a message
-	var msg *gsheet.Msg = &gsheet.Msg{
-		From:    "me",  // the authenticated user
-		To:      "leadership@firma.com",
-		Subject: "testing",
-		Body:    "testing gmail api. lmk if you get this scott",
-	}
+        // Create a message
+        var msg *gsheet.Msg = &gsheet.Msg{
+                From:    "me",  // the authenticated user
+                To:      "leadership@firma.com",
+                Subject: "testing",
+                Body:    "testing gmail api. lmk if you get this scott",
+        }
 
-    // send the email with the message
-	err := msg.Send()
-	if err != nil {
-		log.Println(err)
-	}
+        // send the email with the message
+        err := msg.Send()
+        if err != nil {
+                log.Println(err)
+        }
 }
 ```
 
@@ -362,12 +365,12 @@ func main() {
 
 // Instantiate a new *Access struct with essential values
 var access *gsheet.Access = gsheet.NewAccess(
-	os.Getenv("HOME")+"/credentials/credentials.json",
-	os.Getenv("HOME")+"/credentials/token.json",
-	[]string{
-		gmail.GmailLabelsScope,
-		gmail.GmailModifyScope,
-	})
+        os.Getenv("HOME")+"/credentials/credentials.json",
+        os.Getenv("HOME")+"/credentials/token.json",
+        []string{
+                gmail.GmailLabelsScope,
+                gmail.GmailModifyScope,
+        })
 
 
 func main() {
@@ -397,13 +400,13 @@ func main() {
 
 // Instantiate a new *Access struct with essential values
 var access *gsheet.Access = gsheet.NewAccess(
-	os.Getenv("HOME")+"/credentials/credentials.json",
-	os.Getenv("HOME")+"/credentials/token.json",
-	[]string{
-		gmail.GmailComposeScope,
-		gmail.GmailLabelsScope,
-		gmail.GmailModifyScope,
-	})
+        os.Getenv("HOME")+"/credentials/credentials.json",
+        os.Getenv("HOME")+"/credentials/token.json",
+        []string{
+                gmail.GmailComposeScope,
+                gmail.GmailLabelsScope,
+                gmail.GmailModifyScope,
+        })
 
 
 func main() {
@@ -418,22 +421,20 @@ func main() {
 
 // Instantiate a new *Access struct with essential values
 var access *gsheet.Access = gsheet.NewAccess(
-	os.Getenv("HOME")+"/credentials/credentials.json",
-	os.Getenv("HOME")+"/credentials/token.json",
-	[]string{
-		gmail.GmailLabelsScope,
-	})
+        os.Getenv("HOME")+"/credentials/credentials.json",
+        os.Getenv("HOME")+"/credentials/token.json",
+        []string{
+                gmail.GmailLabelsScope,
+        })
 
 
 func main() {
         // Connect to the gmail API service.
         gm := access.Gmail()
-
         labels, err := gm.GetLabels()
         if err != nil {
                 fmt.Println(err)
         }
-
         for _, label := range labels {
                 fmt.Println(label)
         }
@@ -446,13 +447,13 @@ func main() {
 
 // Instantiate a new *Access struct with essential values
 var access *gsheet.Access = gsheet.NewAccess(
-	os.Getenv("HOME")+"/credentials/credentials.json",
-	os.Getenv("HOME")+"/credentials/token.json",
-	[]string{
-		gmail.GmailComposeScope,
-		gmail.GmailLabelsScope,
-		gmail.GmailModifyScope,
-	})
+        os.Getenv("HOME")+"/credentials/credentials.json",
+        os.Getenv("HOME")+"/credentials/token.json",
+        []string{
+                gmail.GmailComposeScope,
+                gmail.GmailLabelsScope,
+                gmail.GmailModifyScope,
+        })
 
 
 func main() {
@@ -486,13 +487,13 @@ func main() {
 
 // Instantiate a new *Access struct with essential values
 var access *gsheet.Access = gsheet.NewAccess(
-	os.Getenv("HOME")+"/credentials/credentials.json",
-	os.Getenv("HOME")+"/credentials/token.json",
-	[]string{
-		gmail.GmailComposeScope,
-		gmail.GmailLabelsScope,
-		gmail.GmailModifyScope,
-	})
+        os.Getenv("HOME")+"/credentials/credentials.json",
+        os.Getenv("HOME")+"/credentials/token.json",
+        []string{
+                gmail.GmailComposeScope,
+                gmail.GmailLabelsScope,
+                gmail.GmailModifyScope,
+        })
 
 
 func main() {
@@ -520,11 +521,11 @@ func main() {
 
 // Instantiate a new *Access struct with essential values
 var access *gsheet.Access = gsheet.NewAccess(
-	os.Getenv("HOME")+"/credentials/credentials.json",
-	os.Getenv("HOME")+"/credentials/token.json",
-	[]string{
-		gmail.GmailLabelsScope,
-	})
+        os.Getenv("HOME")+"/credentials/credentials.json",
+        os.Getenv("HOME")+"/credentials/token.json",
+        []string{
+                gmail.GmailLabelsScope,
+        })
 
 
 // NOTE: to actually view the email text use gm.Query and query for unread
@@ -532,9 +533,8 @@ var access *gsheet.Access = gsheet.NewAccess(
 func main() {
         // Connect to the gmail API service.
         gm := access.Gmail()
-
         // num will be -1 on err
-        num, err :=	gm.CheckForUnread()
+        num, err :=        gm.CheckForUnread()
         if err != nil {
                 fmt.Println(err)
         }
@@ -549,13 +549,13 @@ func main() {
 
 // Instantiate a new *Access struct with essential values
 var access *gsheet.Access = gsheet.NewAccess(
-	os.Getenv("HOME")+"/credentials/credentials.json",
-	os.Getenv("HOME")+"/credentials/token.json",
-	[]string{
-		gmail.GmailComposeScope,
-		gmail.GmailLabelsScope,
-		gmail.GmailModifyScope,
-	})
+        os.Getenv("HOME")+"/credentials/credentials.json",
+        os.Getenv("HOME")+"/credentials/token.json",
+        []string{
+                gmail.GmailComposeScope,
+                gmail.GmailLabelsScope,
+                gmail.GmailModifyScope,
+        })
 
 
 // Convert UNIX time stamps to human readable format
@@ -587,11 +587,11 @@ func main() {
 
 // Instantiate a new *Access struct with essential values
 var access *gsheet.Access = gsheet.NewAccess(
-	os.Getenv("HOME")+"/credentials/credentials.json",
-	os.Getenv("HOME")+"/credentials/token.json",
-	[]string{
-		gmail.GmailLabelsScope,
-	})
+        os.Getenv("HOME")+"/credentials/credentials.json",
+        os.Getenv("HOME")+"/credentials/token.json",
+        []string{
+                gmail.GmailLabelsScope,
+        })
 
 
 // Snippets are not really part of the package but I'm including them in the doc

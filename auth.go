@@ -17,7 +17,13 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+
 package gsheet
+
+// Almost everything in this file (auth.go) and main.go was provided in the
+// sheets/gmailAPI example code, and I, the author of this module, do not take
+// credit for the code found in these file(s), but give credit to the authors
+// at Google. (Everything else in this module is written by the author).
 
 import (
 	"encoding/json"
@@ -116,7 +122,7 @@ func (a *Access) SaveToken() error {
 	return json.NewEncoder(f).Encode(a.Token)
 }
 
-// *Access.Cycle(rate time.Duration) is used to cycle (refresh) the token, if
+// *Access.Cycle(time.Duration) is used to cycle (refresh) the token, if
 // ran with rate = 0 it'll refresh every 23 hours as default.
 func (a *Access) Cycle(rate time.Duration) {
 	if rate != 0 {
