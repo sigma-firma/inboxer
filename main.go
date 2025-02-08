@@ -22,9 +22,10 @@
 // SOFTWARE.
 package gsheet
 
-// Almost everything in this file (connect.go) was provided in the sheetsAPI
-// example code, and I, the author of this module, do not take credit for the
-// code found in this file, but give credit to the authors at Google.
+// Almost everything in this file (main.go) and auth.go was provided in the
+// sheetsAPI example code, and I, the author of this module, do not take credit
+// for the code found in these file(s), but give credit to the authors at
+// Google.
 // (Everything else in this module is written by the author).
 import (
 	"context"

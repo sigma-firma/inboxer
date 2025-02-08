@@ -35,7 +35,7 @@
     - Send emails
     - Mark emails (read/unread/important/etc)
     - Get labels used in inbox
-    - Get emails by query (eg "in:sent after:2017/01/01 before:2017/01/30")
+    - Get emails by query (eg "in:sent after:2025/01/01 before:2025/01/30")
     - Get email metadata
     - Get email main body ("text/plain", "text/html")
     - Get the number of unread messages
@@ -280,7 +280,7 @@ var access *gsheet.Access = gsheet.NewAccess(
 
 func main() {
         gm := access.Gmail()
-        msgs, err := gm.Query("category:forums after:2017/01/01 before:2017/01/30")
+        msgs, err := gm.Query("category:forums after:2025/01/01 before:2025/01/30")
         if err != nil {
                 fmt.Println(err)
         }
@@ -374,7 +374,7 @@ func main() {
         // Connect to the gmail API service.
         gm := access.Gmail()
 
-        msgs, err := gm.Query("category:forums after:2017/01/01 before:2017/01/30")
+        msgs, err := gm.Query("category:forums after:2025/01/01 before:2025/01/30")
         if err != nil {
                 fmt.Println(err)
         }
@@ -459,7 +459,7 @@ func main() {
         // Connect to the gmail API service.
         gm := access.Gmail()
 
-        msgs, err := gm.Query("category:forums after:2017/01/01 before:2017/01/30")
+        msgs, err := gm.Query("category:forums after:2025/01/01 before:2025/01/30")
         if err != nil {
                 fmt.Println(err)
         }
@@ -498,7 +498,7 @@ var access *gsheet.Access = gsheet.NewAccess(
 func main() {
         // Connect to the gmail API service.
         gm := access.Gmail()
-        msgs, err := gm.Query("category:forums after:2017/01/01 before:2017/01/30")
+        msgs, err := gm.Query("category:forums after:2025/01/01 before:2025/01/30")
         if err != nil {
                 fmt.Println(err)
         }
@@ -563,7 +563,7 @@ func main() {
         // Connect to the gmail API service.
         gm := access.Gmail()
 
-        msgs, err := gm.Query("category:forums after:2017/01/01 before:2017/01/30")
+        msgs, err := gm.Query("category:forums after:2025/01/01 before:2025/01/30")
         if err != nil {
                 fmt.Println(err)
         }
@@ -600,7 +600,7 @@ func main() {
         // Connect to the gmail API service.
         gm := access.Gmail()
 
-        msgs, err := gm.Query("category:forums after:2017/01/01 before:2017/01/30")
+        msgs, err := gm.Query("category:forums after:2025/01/01 before:2025/01/30")
         if err != nil {
                 fmt.Println(err)
         }
