@@ -64,19 +64,19 @@ following:
 ```go
 func main() {
 	var access *gsheet.Access = gsheet.NewAccess(
-		//location of credentials.json
-		// NOTE: Get this from Google
-		os.Getenv("HOME")+"/credentials/credentials.json",
-		// Location of token.json, or where/what it should be saved /as.
-		// NOTE: This will automatically download if you don't have it
-		os.Getenv("HOME")+"/credentials/token.json",
+        //location of credentials.json
+        // NOTE: Get this from Google
+        os.Getenv("HOME")+"/credentials/credentials.json",
+        // Location of token.json, or where/what it should be saved /as.
+        // NOTE: This will automatically download if you don't have it
+        os.Getenv("HOME")+"/credentials/token.json",
           // Provided here are the scopes. Scopes are used by the API to 
           // determine your privilege level. 
-	
-		[]string{
-			gmail.GmailComposeScope,
-			sheets.SpreadsheetsScope,
-		})
+    
+        []string{
+        	gmail.GmailComposeScope,
+        	sheets.SpreadsheetsScope,
+        })
 
 	// connect to gmail
 	access.Gmail()
