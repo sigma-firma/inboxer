@@ -70,11 +70,7 @@ type Access struct {
 	RefreshRate *time.Ticker
 	// LastRefreshed
 	LastRefreshed time.Time
-	// DoCycle tells the program whether or not you want to cycle (refresh) your
-	// token. If you want it to last more than 24 hours you want to set this
-	// to true. *Access.Cycle will be run in a go routine.
-	DoCycle bool
-	Client  *http.Client
+	Client        *http.Client
 }
 
 // NewAccess() instantiates a new *Access struct, initializing it with default
@@ -89,10 +85,10 @@ func NewAccess(credentialsPath, tokenPath string, scopes []string) *Access {
 		Config:          &oauth2.Config{},
 		Token:           &oauth2.Token{},
 		RefreshRate:     time.NewTicker(23 * time.Hour),
-		DoCycle:         true,
 	}
 	// see: auth.go
 	a.ReadCredentials()
+
 	a.Cycle(0)
 	return a
 }
@@ -100,6 +96,7 @@ func NewAccess(credentialsPath, tokenPath string, scopes []string) *Access {
 // *Access.Connect(any) connects us to a service. At this time gsheet only
 // supports the Gmail API, the Google Sheets API, or both. Pass either of the
 // following empty (as empty structs):
+//
 // *gmail.Sevice{}
 // *sheets.Service{}
 func (a *Access) Connect(service any) {
