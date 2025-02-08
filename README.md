@@ -57,7 +57,6 @@ https://developers.google.com/sheets/api/quickstart/go
 That link will walk you through enabling the sheets API through the Google 
 Cloud console, and creating and downloading your `credentials.json` file.
 
-
 Once you have enabled the API, download the `credentials.json` file and store 
 somewhere safe. You can connect to the Gmail and Sheets APIs using the 
 following:
